@@ -65,15 +65,16 @@ float getAmbientOcclusion(vec3 p, vec3 normal) {
 }
 
 void lightIt(inout vec3 col, in vec3 spec_col, in vec3 light_location, 
-    in vec3 point, in vec3 rd, in vec4 config, in bool occlude){
+    in vec3 point, in vec3 rd, in vec4 config, in bool occlude, in float original_mix){
     
     // Physical light factors...
-    vec3 light_offset   = normalize(light_location-point);
+    vec3 light_distance = light_location-point;
+    vec3 light_offset   = normalize(light_distance);
     vec3 norm           = getNormal(point);
     vec3 reflection     = reflect(-light_offset, norm);
 
     // Directional lighting factors...
-    vec3 specular   = config.r * spec_col *pow(clamp(dot(reflection, -rd), 0.0, 1.0), 10.0);
+    vec3 specular   = config.r * spec_col *pow(clamp(dot(reflection, -rd), 0.0, 1.0), 10.0);//log(length(light_distance)) ;
     vec3 diffuse    = config.g * col * clamp(dot(light_offset, norm), 0.0, 1.0);
     vec3 fresnel    = config.b * col * pow(1.0 + dot(rd, norm), 3.0);
     vec3 ambient    = config.a * col;
@@ -83,17 +84,17 @@ void lightIt(inout vec3 col, in vec3 spec_col, in vec3 light_location,
     float shadow    = 1.0;//TODO: TEMPORAY
     if (occlude){
         float occ   = getAmbientOcclusion(point,  norm);
-        col = (back + ambient + fresnel) * occ + (specular * occ + diffuse) * shadow;
+        col = mix((back + ambient + fresnel) * occ + (specular * occ + diffuse) * shadow, col, original_mix);
     } else{
-        col = (back + ambient + fresnel) + (specular + diffuse) * shadow;
+        col = mix((back + ambient + fresnel) + (specular + diffuse) * shadow, col, original_mix);
     }
 }
 
 void ceilingLight(inout vec3 col, in vec3 point, in vec3 rd){
     vec4 light_scale_config = vec4(0.8, 0.9, 0.15, 0.10);
     vec3 spec_col = vec3(0.6, 0.5, 0.4);
-    vec3 light_location = vec3(cos(u_time)*10.0, ROOM_SCALE*.9, sin(u_time)*10.0);
-    lightIt(col, spec_col, light_location, point, rd, light_scale_config, true);
+    vec3 light_location = vec3(0.);//vec3(cos(u_time)*10.0, ROOM_SCALE*.9, sin(u_time)*10.0);
+    lightIt(col, spec_col, light_location, point, rd, light_scale_config, true, 0.);
 }
 
 /*vec3 aura_map(in vec3 point, in vec3 aura_point){
@@ -114,31 +115,37 @@ float castAura( in vec3 ro, in vec3 rd) {
     return MAX_DIST;
 }*/
 
-void spellLight(inout vec3 col, in vec3 point, in vec3 ro, in vec3 rd){
-    vec3 spell_offset = ro*ROOM_SCALE*sin(u_time);
+void spellLight(inout vec3 col, in vec3 point, in vec3 ro, in vec3 rd, in vec3 lookAt){
+    // point = ro+rd*dist;
+    float spell_progress = (sin(u_time)/2.)+.5;
+    /*vec3 spell_offset = ro*ROOM_SCALE*;
     vec3 max_disp = spell_offset/max(abs(spell_offset.x), max(abs(spell_offset.y), abs(spell_offset.z)))*ROOM_SCALE;
-    vec3 aura_point = clamp(ro*spell_offset, -max_disp, max_disp);
+    vec3 aura_point = clamp(ro*spell_offset, -max_disp, max_disp);*/
+    float wall = castRay(ro, normalize(lookAt-ro));
 
-    /*vec3 aura_point = mix( vec3((1.0+sin(u_time))/2.),
-        vec3(0.), normalize(ro)*castRay(vec3(0.), ro));*/
+    vec3 aura_point = mix((ro-lookAt), normalize(lookAt-ro)*wall, spell_progress);
+    
+    
+    /*mix( vec3((sin(u_time))/2.),
+        vec3(0.), castRay(vec3(0.), ro));*/
     
     vec3 spec_col = vec3(0.9, 0.3, 0.2);
-    vec4 light_scale_config = vec4(1.9, 0.9, 0.15, 0.5);//vec4(1.9/length(spell_offset), 0.9, 0.15, 0.5);
+    vec4 light_scale_config = vec4(1.9, 0.9*log(2.0-spell_progress), 0.15*spell_progress, 0.5);//vec4(1.9/length(spell_offset), 0.9, 0.15, 0.5);
 
-    lightIt(col, spec_col, aura_point, point, rd, light_scale_config, false);
+    lightIt(col, spec_col, aura_point, point, rd, light_scale_config, false, 1.0-spell_progress);
     /*float glow = 1./length(aura_point-point);
     col += glow;*/
     float dist_factor = length(aura_point-point);
     col /= max(.1*log(dist_factor), .1);
 }
 
-vec3 render_room(in vec3 ro, in vec3 rd){
+vec3 render_room(in vec3 ro, in vec3 rd, in vec3 lookAt){
     float dist = castRay(ro, rd);
     vec3 background = vec3(0.);
     if (dist < MAX_DIST){
         vec3 point = ro+rd*dist;
         vec3 col = vec3(.4, .44, .4 )/2.0;
-        spellLight(col, point, ro, rd);
+        spellLight(col, point, ro, rd, lookAt);
         ceilingLight(col, point, rd);
         return col;
     } else {
@@ -151,11 +158,11 @@ void main() {
     vec3 ro = vec3(15.0, 9.0,9.0) / u_scroll;
     mouseControl(ro);
 
-    vec3 lookAt = vec3(0, 1, 0);
+    vec3 lookAt = vec3(0, 0, 0);
     vec3 rd = getCam(ro, lookAt) * normalize(vec3(uv, FOV));
 
 
-    vec3 col = render_room(ro, rd);
+    vec3 col = render_room(ro, rd, lookAt);
 
     
 
