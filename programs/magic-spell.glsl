@@ -115,28 +115,53 @@ float castAura( in vec3 ro, in vec3 rd) {
     return MAX_DIST;
 }*/
 
-void spellLight(inout vec3 col, in vec3 point, in vec3 ro, in vec3 rd, in vec3 lookAt){
-    // point = ro+rd*dist;
-    float spell_progress = (sin(u_time)/2.)+.5;
-    /*vec3 spell_offset = ro*ROOM_SCALE*;
-    vec3 max_disp = spell_offset/max(abs(spell_offset.x), max(abs(spell_offset.y), abs(spell_offset.z)))*ROOM_SCALE;
-    vec3 aura_point = clamp(ro*spell_offset, -max_disp, max_disp);*/
-    float wall = castRay(ro, normalize(lookAt-ro));
-
-    vec3 aura_point = mix((ro-lookAt), normalize(lookAt-ro)*wall, spell_progress);
-    
-    
-    /*mix( vec3((sin(u_time))/2.),
-        vec3(0.), castRay(vec3(0.), ro));*/
-    
+void spellLight(inout vec3 col, in vec3 point, in vec3 rd, in vec3 aura_point, in float spell_progress){
     vec3 spec_col = vec3(0.9, 0.3, 0.2);
-    vec4 light_scale_config = vec4(1.9, 0.9*log(2.0-spell_progress), 0.15*spell_progress, 0.5);//vec4(1.9/length(spell_offset), 0.9, 0.15, 0.5);
+    vec4 light_scale_config = vec4(0.9, 0.9*log(2.0-spell_progress), 0.15*spell_progress, 0.5);
 
     lightIt(col, spec_col, aura_point, point, rd, light_scale_config, false, 1.0-spell_progress);
     /*float glow = 1./length(aura_point-point);
-    col += glow;*/
+    col += glow/10.;*/
     float dist_factor = length(aura_point-point);
     col /= max(.1*log(dist_factor), .1);
+}
+
+vec3 projectOntoPlane(vec3 ray_direction, vec3 aura_direction) {
+  // Ensure aura_direction is normalized
+  vec3 n = normalize(aura_direction);
+    
+  // Project ray_direction onto the plane defined by aura_direction as the normal
+  vec3 projection = ray_direction - dot(ray_direction, n) * n;
+    
+  return projection;
+}
+
+
+vec3 spellRing(in vec3 ro, in vec3 rd, in vec3 aura_point, in float progress){
+    vec3 aura_direction = aura_point-ro;
+    float to_surface = length(aura_direction);
+    vec3 rd_intersection = ro + rd * to_surface;
+    
+    // Assuming aura_direction is normalized
+    vec3 tempVector = vec3(0.,1.,0.);
+    vec3 u = normalize(cross(aura_direction, tempVector)); // Generate one basis vector
+    vec3 v = cross(aura_direction, u); // Generate the second basis vector orthogonal to the first
+
+    vec3 projection = projectOntoPlane(rd, aura_direction);
+    
+    float x = dot(projection, u);
+    float y = dot(projection, v);
+
+    vec2 planeProjection = vec2(x, y);
+
+    
+    float from_center = length(planeProjection);
+      //length(rd_intersection-aura_point);
+    float radius = 6.0*(1.0+sin(progress*2.*PI));
+    float fall_off = 0.2;
+    return smoothstep(radius-fall_off, radius, from_center)*
+           smoothstep(radius+fall_off, radius, from_center)*
+           vec3(1.);
 }
 
 vec3 render_room(in vec3 ro, in vec3 rd, in vec3 lookAt){
@@ -145,8 +170,18 @@ vec3 render_room(in vec3 ro, in vec3 rd, in vec3 lookAt){
     if (dist < MAX_DIST){
         vec3 point = ro+rd*dist;
         vec3 col = vec3(.4, .44, .4 )/2.0;
-        spellLight(col, point, ro, rd, lookAt);
+
+        // Spell variables...
+        float spell_progress = (sin(u_time)/2.)+.5;
+        float wall = castRay(ro-lookAt, normalize(lookAt-ro));
+        vec3 aura_point = mix((ro-lookAt), normalize(lookAt-ro)*wall, spell_progress);
+        spellLight(col, point, rd, aura_point, spell_progress);
+
         ceilingLight(col, point, rd);
+
+        col = max(col, spellRing(ro, rd, aura_point, spell_progress));
+        //col += ring_opacity;
+        
         return col;
     } else {
         return background;
