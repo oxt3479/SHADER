@@ -6,6 +6,7 @@ pkg_search_module(GLFW REQUIRED glfw3)
 find_package(OpenGL REQUIRED)
 include_directories("./include/")
 
-add_executable(run "src/glad.c" "src/window.cpp")
+file(GLOB SOURCES "src/*.cpp")
+add_executable(run "src/glad.c" ${SOURCES})
 target_link_libraries(run ${OPENGL_LIBRARIES} ${GLFW_LIBRARIES} "-ldl")
 
