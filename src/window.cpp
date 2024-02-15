@@ -40,7 +40,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(START_WIDTH, START_HEIGHT, "SHADER", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(START_WIDTH, START_HEIGHT, "SHADER", NULL, NULL);
     
     if (window != NULL) {
 
@@ -48,28 +48,34 @@ int main() {
     glfwSetFramebufferSizeCallback(window, onWindowResize);
 
     if (gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    /*The above line initiallizes GLAD which handles all of 
+    our OS specific function pointers (glad.c)*/
 //-----------------------
-    Shader shaderProgram("../programs/default.vert", "../programs/default.frag");
-	VAO VAO1;
-	VAO1.Bind();
-	VBO VBO1(vertices, sizeof(vertices));
-	EBO EBO1(indices, sizeof(indices));
-	VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
-	VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	VAO1.Unbind();
+    ShaderProgram shaderProgram("../programs/default.vert", "../programs/default.frag");
+    VAO VAO1;
+	VAO1.Bind(); //WHY does moving this cause a seg fault?    
+    VBO VBO1(vertices, sizeof(vertices));
+	VBO1.Bind();
+    EBO EBO1(indices, sizeof(indices)); 
+    
+    VAO1.LinkAttrib( 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
+	VAO1.LinkAttrib( 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    /*Attribute index, Num attributes, Type attributes, Stride Offset*/
+	
+    VAO1.Unbind();
 	VBO1.Unbind();
     EBO1.Unbind();
-	GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale");
 //-----------------------
     while (!glfwWindowShouldClose(window)) {
         processInputs(window);
 //-----------------------
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-		shaderProgram.Activate();
-		glUniform1f(uniID, 0.5f);
-		VAO1.Bind();
+		glClear(GL_COLOR_BUFFER_BIT); // Clears the last buffer...
+        shaderProgram.Activate();
+        shaderProgram.setUniform("scale", 0.5f);
 		glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+        /* think: set second parameter to 3/6 to draw 1 or 2 of the triangles*/
+        //VAO1.Bind(); // Is this always 1?
 //-----------------------
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -79,7 +85,7 @@ int main() {
 	VBO1.Delete();
 	EBO1.Delete();
 	shaderProgram.Delete();
-	glfwDestroyWindow(window);    
+	glfwDestroyWindow(window); 
 //-----------------------
     } else  std::cout << "Failed to initialize GLAD"    << std::endl;   FAILURE_STATUS = -1;
     } else  std::cout << "Failed to create GLFW window" << std::endl;   FAILURE_STATUS = -1;
