@@ -145,20 +145,19 @@ vec3 spellRing(in vec3 ro, in vec3 rd, in vec3 aura_point, in float progress){
     // Assuming aura_direction is normalized
     vec3 tempVector = vec3(0.,1.,0.);
     vec3 u = normalize(cross(aura_direction, tempVector)); // Generate one basis vector
-    vec3 v = cross(aura_direction, u); // Generate the second basis vector orthogonal to the first
+    vec3 v = normalize(cross(aura_direction, u)); // Generate the second basis vector orthogonal to the first
 
     vec3 projection = projectOntoPlane(rd, aura_direction);
     
     float x = dot(projection, u);
     float y = dot(projection, v);
-
-    vec2 planeProjection = vec2(x, y);
-
+    
+	vec2 planeProjection = vec2(x, y);
     
     float from_center = length(planeProjection);
       //length(rd_intersection-aura_point);
-    float radius = 6.0*(1.0+sin(progress*2.*PI));
-    float fall_off = 0.2;
+    float radius = .4*(5.0-5.0*sin(progress*(PI/2.)));
+    float fall_off = 0.04;
     return smoothstep(radius-fall_off, radius, from_center)*
            smoothstep(radius+fall_off, radius, from_center)*
            vec3(1.);
