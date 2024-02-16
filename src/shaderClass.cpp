@@ -33,7 +33,7 @@ ShaderProgram::ShaderProgram(const char* vertexFile, const char* fragmentFile) {
 	checkCompileErrors(fragmentShader, "FRAGMENT");
 
 	ID = glCreateProgram();
-	glAttachShader(ID, vertexShader);
+	//glAttachShader(ID, vertexShader);
 	glAttachShader(ID, fragmentShader);
 	glLinkProgram(ID);
 	checkLinkingErrors(ID);
@@ -42,28 +42,8 @@ ShaderProgram::ShaderProgram(const char* vertexFile, const char* fragmentFile) {
 	glDeleteShader(fragmentShader);
 	/* Now in the program the original shaders are unneeded*/
 }
-void ShaderProgram::setUniform(const std::string& name, float value) {
-    glUniform1f(getUniformLocation(name), value);
-}
-void ShaderProgram::setUniform(const std::string& name, int value) {
-    glUniform1i(getUniformLocation(name), value);
-}
 void ShaderProgram::Activate() { glUseProgram(ID); }
 void ShaderProgram::Delete() { glDeleteProgram(ID); }
-
-GLint ShaderProgram::getUniformLocation(const std::string& name) {
-    // Check if location is already cached
-    if (uniformLocationCache.find(name) != uniformLocationCache.end()) {
-        return uniformLocationCache[name]; // Return cached location
-    }
-    // Location not cached, query from OpenGL
-    GLint location = glGetUniformLocation(ID, name.c_str());
-    if (location == -1)
-        std::cout << "Warning: uniform '" << name << "' doesn't exist!" << std::endl;
-    uniformLocationCache[name] = location; // Cache the location
-    return location;
-}
-
 void ShaderProgram::checkCompileErrors(unsigned int shader, const char* type) {
     GLint hasCompiled;
     char infoLog[1024];

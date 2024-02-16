@@ -2,28 +2,27 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <valarray>
+#include <chrono>
 #include "shaderClass.h"
 #include "shaderObjects.h"
 //-----------------------
 GLfloat vertices[] =
-{ //               COORDINATES                  /     COLORS           //
-	-0.5f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     0.8f, 0.3f,  0.02f, // Lower left corner
-	 0.5f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     0.8f, 0.3f,  0.02f, // Lower right corner
-	 0.0f,  0.5f * float(sqrt(3)) * 2 / 3, 0.0f,     1.0f, 0.6f,  0.32f, // Upper corner
-	-0.25f, 0.5f * float(sqrt(3)) * 1 / 6, 0.0f,     0.9f, 0.45f, 0.17f, // Inner left
-	 0.25f, 0.5f * float(sqrt(3)) * 1 / 6, 0.0f,     0.9f, 0.45f, 0.17f, // Inner right
-	 0.0f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     0.8f, 0.3f,  0.02f  // Inner down
+{
+    -1.0f,  1.0f, // Top-left
+    -1.0f, -1.0f, // Bottom-left
+     1.0f, -1.0f, // Bottom-right
+     1.0f,  1.0f  // Top-right
 };
 
 GLuint indices[] =
 {
-	0, 3, 5, // Lower left triangle
-	3, 2, 4, // Lower right triangle
-	5, 4, 1 // Upper triangle
+    0, 1, 2, // First Triangle
+    2, 3, 0  // Second Triangle
 };
 //-----------------------
-const unsigned int START_WIDTH = 768, START_HEIGHT = 512;
+unsigned int WIDTH = 768, HEIGHT = 768;
 int FAILURE_STATUS = 0;
+const auto startTime = std::chrono::high_resolution_clock::now();
 
 void processInputs(GLFWwindow *window) {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -31,7 +30,14 @@ void processInputs(GLFWwindow *window) {
 }
 
 void onWindowResize(GLFWwindow *window, int width, int height) {
+    WIDTH = width;
+    HEIGHT = height;
     glViewport(0, 0, width, height);
+}
+
+float getTime() {
+    return std::chrono::duration<float, std::chrono::seconds::period>
+            (std::chrono::high_resolution_clock::now() - startTime).count();
 }
 
 int main() {
@@ -40,7 +46,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow *window = glfwCreateWindow(START_WIDTH, START_HEIGHT, "SHADER", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "SHADER", NULL, NULL);
     
     if (window != NULL) {
 
@@ -48,45 +54,39 @@ int main() {
     glfwSetFramebufferSizeCallback(window, onWindowResize);
 
     if (gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-    /*The above line initiallizes GLAD which handles all of 
-    our OS specific function pointers (glad.c)*/
-//-----------------------
-    ShaderProgram shaderProgram("../programs/default.vert", "../programs/default.frag");
+
+    ShaderProgram shaderProgram("../programs/vertex.glsl", "../programs/card-example.glsl");
     VAO VAO1;
-	VAO1.Bind(); //WHY does moving this cause a seg fault?    
     VBO VBO1(vertices, sizeof(vertices));
-	VBO1.Bind();
-    EBO EBO1(indices, sizeof(indices)); 
+    EBO EBO1(indices, sizeof(indices));
     
-    VAO1.LinkAttrib( 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
-	VAO1.LinkAttrib( 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    /*Attribute index, Num attributes, Type attributes, Stride Offset*/
-	
-    VAO1.Unbind();
-	VBO1.Unbind();
-    EBO1.Unbind();
-//-----------------------
+    VAO1.LinkAttrib( 0, 2, GL_FLOAT, 2 * sizeof(float), (void*)0 );
+    GLint U_RESOLUTION  = glGetUniformLocation(shaderProgram.ID, "u_resolution");
+    GLint U_TIME        = glGetUniformLocation(shaderProgram.ID, "u_time");
+
     while (!glfwWindowShouldClose(window)) {
+        
         processInputs(window);
-//-----------------------
-        glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT); // Clears the last buffer...
-        shaderProgram.Activate();
-        shaderProgram.setUniform("scale", 0.5f);
-		glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
-        /* think: set second parameter to 3/6 to draw 1 or 2 of the triangles*/
-        //VAO1.Bind(); // Is this always 1?
-//-----------------------
+        shaderProgram.Activate(); 
+
+        glClearColor(0.f, 0.f, 0.f, 1.0f); // Sets background
+        glClear(GL_COLOR_BUFFER_BIT); // Clears the last buffer...
+
+        glUniform2f(U_RESOLUTION, float(WIDTH), float(HEIGHT));
+        glUniform1f(U_TIME, getTime());
+
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); 
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-//-----------------------
+
     VAO1.Delete();
 	VBO1.Delete();
 	EBO1.Delete();
 	shaderProgram.Delete();
 	glfwDestroyWindow(window); 
-//-----------------------
+
     } else  std::cout << "Failed to initialize GLAD"    << std::endl;   FAILURE_STATUS = -1;
     } else  std::cout << "Failed to create GLFW window" << std::endl;   FAILURE_STATUS = -1;
     
