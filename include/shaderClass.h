@@ -4,7 +4,6 @@
 #include <sstream>
 #include <iostream>
 #include <cerrno>
-#include <unordered_map>
 
 std::string get_file_contents(const char* filename);
 
@@ -12,7 +11,7 @@ class ShaderProgram {
 public:
 	GLuint ID;
 	ShaderProgram(const char* vertexFile, const char* fragmentFile);
-	
+
 	void Activate();
 	void Delete();
 
