@@ -23,6 +23,7 @@ GLuint indices[] =
 unsigned int WIDTH = 768, HEIGHT = 768;
 int FAILURE_STATUS = 0;
 const auto startTime = std::chrono::high_resolution_clock::now();
+double mouseX = 0.0, mouseY = 0.0;
 
 void processInputs(GLFWwindow *window) {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -40,6 +41,11 @@ float getTime() {
             (std::chrono::high_resolution_clock::now() - startTime).count();
 }
 
+void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
+    mouseX = xpos;
+    mouseY = ypos;
+}
+
 int main() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -52,18 +58,22 @@ int main() {
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, onWindowResize);
+    glfwSetCursorPosCallback(window, mouseCallback);
 
     if (gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 
-    ShaderProgram shaderProgram("../programs/vertex.glsl", "../programs/card-example.glsl");
+    ShaderProgram shaderProgram("../programs/vertex.glsl", "../programs/purple-vortex.glsl");
     VAO VAO1;
     VBO VBO1(vertices, sizeof(vertices));
     EBO EBO1(indices, sizeof(indices));
     
     VAO1.LinkAttrib( 0, 2, GL_FLOAT, 2 * sizeof(float), (void*)0 );
-    GLint U_RESOLUTION  = glGetUniformLocation(shaderProgram.ID, "u_resolution");
-    GLint U_TIME        = glGetUniformLocation(shaderProgram.ID, "u_time");
 
+    GLint U_RESOLUTION  = glGetUniformLocation(shaderProgram.ID, "u_resolution");
+    GLint U_MOUSE       = glGetUniformLocation(shaderProgram.ID, "u_mouse");
+    GLint U_TIME        = glGetUniformLocation(shaderProgram.ID, "u_time");
+    GLint U_SCROLL      = glGetUniformLocation(shaderProgram.ID, "u_scroll");
+    
     while (!glfwWindowShouldClose(window)) {
         
         processInputs(window);
@@ -73,7 +83,9 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT); // Clears the last buffer...
 
         glUniform2f(U_RESOLUTION, float(WIDTH), float(HEIGHT));
+        glUniform2f(U_MOUSE, float(mouseX), float(mouseY));
         glUniform1f(U_TIME, getTime());
+        glUniform1f(U_SCROLL, 1.0f);
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); 
 
