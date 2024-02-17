@@ -1,23 +1,42 @@
 #include "shaderClass.h"
 
-std::string get_file_contents(const char* filename) {
-	std::ifstream in(filename, std::ios::binary);
-	if (in) {
-		std::string contents;
-		in.seekg(0, std::ios::end);
-		contents.resize(in.tellg());
-		in.seekg(0, std::ios::beg);
-		in.read(&contents[0], contents.size());
-		in.close();
-		return(contents);
-	}
-	std::cout << "Error loading shader from :" << filename << std::endl;
-	throw(errno);
+std::string get_file_contents(const char* filename, const std::string& parentPath = "") {
+    std::string filePath;
+    if(parentPath.empty()) {
+        filePath = filename;
+    } else {
+        filePath = parentPath + "/" + filename;
+    }
+
+    std::ifstream in(filePath, std::ios::binary);
+    if (in) {
+        std::string contents, line;
+        while (getline(in, line)) {
+            if (line.find("#include") != std::string::npos) {
+                std::size_t start = line.find(" ") + 1;
+                std::size_t end = line.find_last_of("\n") - start;
+                std::string includeFile = line.substr(start, end);
+
+                // Construct the path to the included file relative to the current file
+                std::string includePath = filePath.substr(0, filePath.find_last_of("/\\") + 1);
+
+                // Recursively process the included file
+                contents += get_file_contents(includeFile.c_str(), includePath) + "\n";
+            } else {
+                contents += line + "\n";
+            }
+        }
+        in.close();
+        return contents;
+    } else {
+        std::cerr << "Error loading shader from: " << filePath << std::endl;
+        throw(errno);
+    }
 }
 
 ShaderProgram::ShaderProgram(const char* vertexFile, const char* fragmentFile) {
-	std::string vertexCode = get_file_contents(vertexFile);
-	std::string fragmentCode = get_file_contents(fragmentFile);
+	std::string vertexCode = get_file_contents(vertexFile, "");
+	std::string fragmentCode = get_file_contents(fragmentFile, "");
 
 	const char* vertexSource = vertexCode.c_str();
 	const char* fragmentSource = fragmentCode.c_str();
