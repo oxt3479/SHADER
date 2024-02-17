@@ -20,30 +20,31 @@ GLuint indices[] =
     2, 3, 0  // Second Triangle
 };
 //-----------------------
-unsigned int WIDTH = 768, HEIGHT = 768;
+
 int FAILURE_STATUS = 0;
-const auto startTime = std::chrono::high_resolution_clock::now();
-double mouseX = 0.0, mouseY = 0.0;
 
 void processInputs(GLFWwindow *window) {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 }
 
-void onWindowResize(GLFWwindow *window, int width, int height) {
+unsigned int WIDTH = 768, HEIGHT = 768;
+void resizeCallback(GLFWwindow *window, int width, int height) {
     WIDTH = width;
     HEIGHT = height;
     glViewport(0, 0, width, height);
 }
 
-float getTime() {
-    return std::chrono::duration<float, std::chrono::seconds::period>
-            (std::chrono::high_resolution_clock::now() - startTime).count();
-}
-
+float mouseX = 0.0, mouseY = 0.0;
 void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
     mouseX = xpos;
     mouseY = ypos;
+}
+
+const auto startTime = std::chrono::high_resolution_clock::now();
+float getTime() {
+    return std::chrono::duration<float, std::chrono::seconds::period>
+            (std::chrono::high_resolution_clock::now() - startTime).count();
 }
 
 int main() {
@@ -57,16 +58,13 @@ int main() {
     if (window != NULL) {
 
     glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, onWindowResize);
+    glfwSetFramebufferSizeCallback(window, resizeCallback);
     glfwSetCursorPosCallback(window, mouseCallback);
 
     if (gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 
     ShaderProgram shaderProgram("../programs/vertex.glsl", "../programs/purple-vortex.glsl");
-    VAO VAO1;
-    VBO VBO1(vertices, sizeof(vertices));
-    EBO EBO1(indices, sizeof(indices));
-    
+    VAO VAO1(vertices, sizeof(vertices), indices, sizeof(indices));
     VAO1.LinkAttrib( 0, 2, GL_FLOAT, 2 * sizeof(float), (void*)0 );
 
     GLint U_RESOLUTION  = glGetUniformLocation(shaderProgram.ID, "u_resolution");
@@ -83,7 +81,7 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT); // Clears the last buffer...
 
         glUniform2f(U_RESOLUTION, float(WIDTH), float(HEIGHT));
-        glUniform2f(U_MOUSE, float(mouseX), float(mouseY));
+        glUniform2f(U_MOUSE, mouseX, mouseY);
         glUniform1f(U_TIME, getTime());
         glUniform1f(U_SCROLL, 1.0f);
 
@@ -93,10 +91,8 @@ int main() {
         glfwPollEvents();
     }
 
+    shaderProgram.Delete();
     VAO1.Delete();
-	VBO1.Delete();
-	EBO1.Delete();
-	shaderProgram.Delete();
 	glfwDestroyWindow(window); 
 
     } else  std::cout << "Failed to initialize GLAD"    << std::endl;   FAILURE_STATUS = -1;

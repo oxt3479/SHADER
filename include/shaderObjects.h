@@ -3,6 +3,7 @@
 class VBO {
 public:
 	GLuint ID;
+	VBO();
 	VBO(GLfloat* vertices, GLsizeiptr size);
 
 	void Bind();
@@ -13,6 +14,7 @@ public:
 class EBO {
 public:
 	GLuint ID;
+	EBO();
 	EBO(GLuint* indices, GLsizeiptr size);
 
 	void Bind();
@@ -23,7 +25,10 @@ public:
 class VAO {
 public:
 	GLuint ID;
-	VAO();
+	VBO vbo;
+	EBO ebo;
+	
+	VAO(GLfloat* vertices, GLsizeiptr verticesSize, GLuint* indices, GLsizeiptr indicessSize);
 	void LinkAttrib(GLuint attrIdx, GLuint numComponents, \
 		GLenum type, GLsizeiptr stride, void* offset);
 

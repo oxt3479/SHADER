@@ -1,6 +1,7 @@
 #include "shaderObjects.h"
 
 // Vertex Buffer Object
+VBO::VBO() {}
 VBO::VBO(GLfloat* vertices, GLsizeiptr size) {
 	glGenBuffers(1, &ID);
 	glBindBuffer(GL_ARRAY_BUFFER, ID);
@@ -11,6 +12,7 @@ void VBO::Unbind()	{ glBindBuffer(GL_ARRAY_BUFFER, 0); }
 void VBO::Delete() 	{ glDeleteBuffers(1, &ID); }
 
 // Element(Index) Buffer Object
+EBO::EBO() {}
 EBO::EBO(GLuint* indices, GLsizeiptr size) {
 	glGenBuffers(1, &ID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ID);
@@ -21,11 +23,19 @@ void EBO::Unbind()	{ glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
 void EBO::Delete()  { glDeleteBuffers(1, &ID); }
 
 // Vertext Array Object
-VAO::VAO() 		  	{ glGenVertexArrays(1, &ID); Bind();}
+VAO::VAO(GLfloat* vertices, GLsizeiptr verticesSize, \
+			GLuint* indices, GLsizeiptr indicesSize) : vbo(), ebo() {
+	glGenVertexArrays(1, &ID);
+	glBindVertexArray(ID);
+	// Create VBO and EBO with the provided data
+	vbo = VBO(vertices, verticesSize);
+	ebo = EBO(indices, indicesSize);
+}
 void VAO::LinkAttrib( GLuint attrIdx, GLuint numComponents, \
  						GLenum type, GLsizeiptr stride, void* offset) {
 	/* Think of these parameters as descibing how to index
 	 into the vertex(VBO) arrays*/
+	vbo.Bind();
 	glVertexAttribPointer(attrIdx, numComponents, type, GL_FALSE, stride, offset);
 	/*Attribute index, Num attributes, Type attributes, Stride Offset*/
 	glEnableVertexAttribArray(attrIdx);
