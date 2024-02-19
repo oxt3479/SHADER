@@ -1,6 +1,6 @@
 #include "shaderClass.h"
 
-std::string get_file_contents(const char* filename, const std::string& parentPath = "") {
+std::string get_file_contents(const std::string& filename, const std::string& parentPath = "") {
     std::string filePath;
     if(parentPath.empty()) {
         filePath = filename;
@@ -34,9 +34,14 @@ std::string get_file_contents(const char* filename, const std::string& parentPat
     }
 }
 
-ShaderProgram::ShaderProgram(const char* vertexFile, const char* fragmentFile) {
-	std::string vertexCode = get_file_contents(vertexFile, "");
-	std::string fragmentCode = get_file_contents(fragmentFile, "");
+ShaderProgram::ShaderProgram(   const std::string& vertexFile, 
+                                const std::string& fragmentFile, bool load)
+        : vertex_path(vertexFile), fragment_path(fragmentFile) {
+    if (!load) Load();
+}
+void ShaderProgram::Load() {
+	std::string vertexCode = get_file_contents(vertex_path, "");
+	std::string fragmentCode = get_file_contents(fragment_path, "");
 
 	const char* vertexSource = vertexCode.c_str();
 	const char* fragmentSource = fragmentCode.c_str();
@@ -59,7 +64,7 @@ ShaderProgram::ShaderProgram(const char* vertexFile, const char* fragmentFile) {
 
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
-	/* Now in the program the original shaders are unneeded*/
+	/* Now in the program the original shaders are unneeded*/    
 }
 void ShaderProgram::Activate() { glUseProgram(ID); }
 void ShaderProgram::Delete() { glDeleteProgram(ID); }

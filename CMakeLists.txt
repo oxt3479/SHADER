@@ -6,7 +6,9 @@ pkg_search_module(GLFW REQUIRED glfw3)
 find_package(OpenGL REQUIRED)
 include_directories("./include/")
 
+#file(GLOB SHADER_FILES "${CMAKE_SOURCE_DIR}/programs/*")
+#file(COPY ${SHADER_FILES} DESTINATION "${CMAKE_BINARY_DIR}/programs")
+
 file(GLOB SOURCES "src/*.cpp")
 add_executable(run "src/glad.c" ${SOURCES})
 target_link_libraries(run ${OPENGL_LIBRARIES} ${GLFW_LIBRARIES} "-ldl")
-

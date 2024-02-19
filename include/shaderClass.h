@@ -10,8 +10,11 @@ std::string get_file_contents(const char* filename);
 class ShaderProgram {
 public:
 	GLuint ID;
-	ShaderProgram(const char* vertexFile, const char* fragmentFile);
-
+	std::string vertex_path, fragment_path;	
+	ShaderProgram(	const std::string& vertexFile,\
+					const std::string& fragmentFile, bool load);
+	
+	void Load();
 	void Activate();
 	void Delete();
 

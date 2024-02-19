@@ -6,7 +6,8 @@ struct Uniforms
 {
     unsigned int windWidth, windHeight;
     float mouseX, mouseY;
-    float scroll = 1.0;    
+    float scroll = 1.0;
+    bool loading = true;
 };
 Uniforms* getUniforms(GLFWwindow* window);
 

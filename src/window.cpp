@@ -1,8 +1,17 @@
 #include "window.h"
+#include <stdio.h>
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if( key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
+    } else {
+        Uniforms* uniforms = getUniforms(window);
+        if ( key == GLFW_KEY_SPACE && action == GLFW_PRESS ) {
+            uniforms->loading = true;
+            std::cout << "Reloading Shaders" << std::endl;
+        } else {
+            uniforms->loading = false;
+        }
     }
 }
 

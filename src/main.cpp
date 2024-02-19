@@ -18,18 +18,26 @@ GLuint indices[] =
 
 int main() {
     GLFWwindow* window = initializeWindow(768, 768, "SHADER");
-    ShaderProgram shaderProgram("../programs/vertex.glsl", "../programs/magic-spell.glsl");
+
+    ShaderProgram shaderProgram("../programs/vertex.glsl", \
+                                "../programs/magic-spell.glsl", false);
     VAO vertArrayObj(vertices, sizeof(vertices), indices, sizeof(indices));
     vertArrayObj.LinkAttrib( 0, 2, GL_FLOAT, 2 * sizeof(float), (void*)0 );
     
     Uniforms* uniforms  = getUniforms(window);
-    GLint U_RESOLUTION  = glGetUniformLocation(shaderProgram.ID, "u_resolution");
-    GLint U_MOUSE       = glGetUniformLocation(shaderProgram.ID, "u_mouse");    
-    GLint U_SCROLL      = glGetUniformLocation(shaderProgram.ID, "u_scroll");
-    GLint U_TIME        = glGetUniformLocation(shaderProgram.ID, "u_time");
+    GLint U_RESOLUTION, U_MOUSE, U_SCROLL, U_TIME;
     
     while (!glfwWindowShouldClose(window)) {
-        shaderProgram.Activate();
+        if (uniforms->loading) {
+            shaderProgram.Load();
+            shaderProgram.Activate();
+
+            U_RESOLUTION  = glGetUniformLocation(shaderProgram.ID, "u_resolution");
+            U_MOUSE       = glGetUniformLocation(shaderProgram.ID, "u_mouse");    
+            U_SCROLL      = glGetUniformLocation(shaderProgram.ID, "u_scroll");
+            U_TIME        = glGetUniformLocation(shaderProgram.ID, "u_time");
+        }
+
         glClearColor(0.f, 0.f, 0.f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
