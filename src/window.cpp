@@ -7,20 +7,20 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 }
 
 void resizeCallback(GLFWwindow* window, int width, int height) {
-    Uniforms* uniforms = static_cast<Uniforms*>(glfwGetWindowUserPointer(window));
+    Uniforms* uniforms = getUniforms(window);
     uniforms->windWidth = width;
     uniforms->windHeight = height;
     glViewport(0, 0, width, height);
 }
 
 void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
-    Uniforms* uniforms = static_cast<Uniforms*>(glfwGetWindowUserPointer(window));
+    Uniforms* uniforms = getUniforms(window);
     uniforms->mouseX = float(xpos);
     uniforms->mouseY = float(ypos);
 }
 
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
-    Uniforms* uniforms = static_cast<Uniforms*>(glfwGetWindowUserPointer(window));
+    Uniforms* uniforms = getUniforms(window);
     uniforms->scroll += float(yoffset/10.0);
 }
 
@@ -54,4 +54,8 @@ GLFWwindow* initializeWindow(unsigned int start_width, unsigned int start_height
     glfwSetWindowUserPointer(window, uniforms);
 
     return window;
+}
+
+Uniforms* getUniforms(GLFWwindow* window) {
+    return static_cast<Uniforms*>(glfwGetWindowUserPointer(window));
 }

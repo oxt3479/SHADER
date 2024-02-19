@@ -22,21 +22,21 @@ int main() {
     VAO vertArrayObj(vertices, sizeof(vertices), indices, sizeof(indices));
     vertArrayObj.LinkAttrib( 0, 2, GL_FLOAT, 2 * sizeof(float), (void*)0 );
     
+    Uniforms* uniforms  = getUniforms(window);
     GLint U_RESOLUTION  = glGetUniformLocation(shaderProgram.ID, "u_resolution");
-    GLint U_MOUSE       = glGetUniformLocation(shaderProgram.ID, "u_mouse");
-    GLint U_TIME        = glGetUniformLocation(shaderProgram.ID, "u_time");
+    GLint U_MOUSE       = glGetUniformLocation(shaderProgram.ID, "u_mouse");    
     GLint U_SCROLL      = glGetUniformLocation(shaderProgram.ID, "u_scroll");
-
-    Uniforms* uniforms = static_cast<Uniforms*>(glfwGetWindowUserPointer(window));
+    GLint U_TIME        = glGetUniformLocation(shaderProgram.ID, "u_time");
+    
     while (!glfwWindowShouldClose(window)) {
         shaderProgram.Activate();
         glClearColor(0.f, 0.f, 0.f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUniform2f(U_RESOLUTION, uniforms->windWidth, uniforms->windHeight);
-        glUniform2f(U_MOUSE, uniforms->mouseX, uniforms->mouseY);
-        glUniform1f(U_TIME, glfwGetTime());
+        glUniform2f(U_MOUSE, uniforms->mouseX, uniforms->mouseY);        
         glUniform1f(U_SCROLL, uniforms->scroll);
+        glUniform1f(U_TIME, glfwGetTime());
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); 
 

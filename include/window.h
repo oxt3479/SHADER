@@ -8,6 +8,7 @@ struct Uniforms
     float mouseX, mouseY;
     float scroll = 1.0;    
 };
+Uniforms* getUniforms(GLFWwindow* window);
 
 GLFWwindow* initializeWindow(unsigned int start_width, unsigned int start_height,\
     const char* title);
