@@ -2,7 +2,6 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <valarray>
-#include <chrono>
 #include "shaderClass.h"
 #include "shaderObjects.h"
 //-----------------------
@@ -22,29 +21,29 @@ GLuint indices[] =
 //-----------------------
 
 int FAILURE_STATUS = 0;
+unsigned int windWidth = 768, windHeight = 768;
+float mouseX, mouseY;
+float scroll = 1.0;
 
-void processInputs(GLFWwindow *window) {
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    if( key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
+    }
 }
 
-unsigned int WIDTH = 768, HEIGHT = 768;
 void resizeCallback(GLFWwindow *window, int width, int height) {
-    WIDTH = width;
-    HEIGHT = height;
+    windWidth = width;
+    windHeight = height;
     glViewport(0, 0, width, height);
 }
 
-float mouseX = 0.0, mouseY = 0.0;
 void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
-    mouseX = xpos;
-    mouseY = ypos;
+    mouseX = float(xpos);
+    mouseY = float(ypos);
 }
 
-const auto startTime = std::chrono::high_resolution_clock::now();
-float getTime() {
-    return std::chrono::duration<float, std::chrono::seconds::period>
-            (std::chrono::high_resolution_clock::now() - startTime).count();
+void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+    scroll += float(yoffset/10.0);
 }
 
 int main() {
@@ -53,19 +52,21 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "SHADER", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(windWidth, windHeight, "SHADER", NULL, NULL);
     
     if (window != NULL) {
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, resizeCallback);
     glfwSetCursorPosCallback(window, mouseCallback);
+    glfwSetKeyCallback(window, keyCallback);
+    glfwSetScrollCallback(window, scrollCallback);
 
     if (gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 
-    ShaderProgram shaderProgram("../programs/vertex.glsl", "../programs/purple-vortex.glsl");
-    VAO VAO1(vertices, sizeof(vertices), indices, sizeof(indices));
-    VAO1.LinkAttrib( 0, 2, GL_FLOAT, 2 * sizeof(float), (void*)0 );
+    ShaderProgram shaderProgram("../programs/vertex.glsl", "../programs/magic-spell.glsl");
+    VAO vertArrayObj(vertices, sizeof(vertices), indices, sizeof(indices));
+    vertArrayObj.LinkAttrib( 0, 2, GL_FLOAT, 2 * sizeof(float), (void*)0 );
 
     GLint U_RESOLUTION  = glGetUniformLocation(shaderProgram.ID, "u_resolution");
     GLint U_MOUSE       = glGetUniformLocation(shaderProgram.ID, "u_mouse");
@@ -73,17 +74,16 @@ int main() {
     GLint U_SCROLL      = glGetUniformLocation(shaderProgram.ID, "u_scroll");
     
     while (!glfwWindowShouldClose(window)) {
-        
-        processInputs(window);
+
         shaderProgram.Activate(); 
 
         glClearColor(0.f, 0.f, 0.f, 1.0f); // Sets background
         glClear(GL_COLOR_BUFFER_BIT); // Clears the last buffer...
 
-        glUniform2f(U_RESOLUTION, float(WIDTH), float(HEIGHT));
+        glUniform2f(U_RESOLUTION, windWidth, windHeight);
         glUniform2f(U_MOUSE, mouseX, mouseY);
-        glUniform1f(U_TIME, getTime());
-        glUniform1f(U_SCROLL, 1.0f);
+        glUniform1f(U_TIME, glfwGetTime());
+        glUniform1f(U_SCROLL, scroll);
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); 
 
@@ -92,7 +92,7 @@ int main() {
     }
 
     shaderProgram.Delete();
-    VAO1.Delete();
+    vertArrayObj.Delete();
 	glfwDestroyWindow(window); 
 
     } else  std::cout << "Failed to initialize GLAD"    << std::endl;   FAILURE_STATUS = -1;
