@@ -37,7 +37,7 @@ std::string get_file_contents(const std::string& filename, const std::string& pa
 ShaderProgram::ShaderProgram(   const std::string& vertexFile, 
                                 const std::string& fragmentFile, bool load)
         : vertex_path(vertexFile), fragment_path(fragmentFile) {
-    if (!load) Load();
+    if ( load ) { Load(); };
 }
 void ShaderProgram::Load() {
 	std::string vertexCode = get_file_contents(vertex_path, "");
@@ -57,7 +57,7 @@ void ShaderProgram::Load() {
 	checkCompileErrors(fragmentShader, "FRAGMENT");
 
 	ID = glCreateProgram();
-	//glAttachShader(ID, vertexShader);
+	glAttachShader(ID, vertexShader);
 	glAttachShader(ID, fragmentShader);
 	glLinkProgram(ID);
 	checkLinkingErrors(ID);
