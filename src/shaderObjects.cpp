@@ -56,6 +56,16 @@ void VAO::LinkAttrib(VBO& VBO, GLuint attrIdx, GLuint numComponents, \
 	VBO.Unbind();
 	/*Attribute index, Num attributes, Type attributes, Stride Offset*/
 }
+void VAO::DrawElements(GLenum mode, GLsizei count, GLenum type, const void *indices) {
+	Bind();
+	glDrawElements(mode, count, type, indices); 
+    Unbind();
+}
+void VAO::DrawArrays(GLenum mode, GLint first, GLsizei count) {
+	Bind();
+    glDrawArrays(mode, first, count);
+    Unbind();
+}
 void VAO::Bind() 	{ glBindVertexArray(ID);}
 void VAO::Unbind() 	{ glBindVertexArray(0); }
 void VAO::Delete() 	{ glDeleteVertexArrays(1, &ID); }

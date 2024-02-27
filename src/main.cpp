@@ -5,21 +5,20 @@
 
 int main() {
     GLFWwindow* window = initializeWindow(768, 768, "SHADER");
-
-    ShaderProgram shaderProgram("../programs/cube-vertex.glsl", \
+        
+    ShaderProgram shader_prog("../programs/cube-vertex.glsl", \
                                 "../programs/cube-fragment.glsl", false);
 
-    VAO vertArrayObj(g_vertex_buffer_data, sizeof(g_vertex_buffer_data),\
+    VAO box_verts(g_vertex_buffer_data, sizeof(g_vertex_buffer_data),\
         g_color_buffer_data, sizeof(g_color_buffer_data));
-    vertArrayObj.LinkAttrib(vertArrayObj.vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
-	vertArrayObj.LinkAttrib(vertArrayObj.cbo, 1, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
+    box_verts.LinkAttrib(box_verts.vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
+	box_verts.LinkAttrib(box_verts.cbo, 1, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
 
-    /*VAO vertArrayObj(triforce_floats, sizeof(triforce_floats), triforce_indices, sizeof(triforce_indices));
-    vertArrayObj.LinkAttrib(vertArrayObj.vbo, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
-	vertArrayObj.LinkAttrib(vertArrayObj.vbo, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));*/
+    for (int i=0; i<36; i++) { triforce_floats[i] *= 5.0; } // really just to help us see both...
 
-    /*VAO vertArrayObj(vertices, sizeof(vertices), indices, sizeof(indices));
-    vertArrayObj.LinkAttrib( 0, 2, GL_FLOAT, 2 * sizeof(float), (void*)0 );*/
+    VAO triforce_verts(triforce_floats, sizeof(triforce_floats), triforce_indices, sizeof(triforce_indices));
+    triforce_verts.LinkAttrib(triforce_verts.vbo, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
+	triforce_verts.LinkAttrib(triforce_verts.vbo, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
     Uniforms* uniforms  = getUniforms(window);
 
@@ -28,14 +27,16 @@ int main() {
     
     while (!glfwWindowShouldClose(window)) {
         if (uniforms->loading) {
-            shaderProgram.Load();
-            shaderProgram.Activate();
+            shader_prog.Load();
+            shader_prog.Activate();
 
-            U_RESOLUTION  = glGetUniformLocation(shaderProgram.ID, "u_resolution");
-            U_MOUSE       = glGetUniformLocation(shaderProgram.ID, "u_mouse");    
-            U_SCROLL      = glGetUniformLocation(shaderProgram.ID, "u_scroll");
-            U_TIME        = glGetUniformLocation(shaderProgram.ID, "u_time");
-            U_CAMERA      = glGetUniformLocation(shaderProgram.ID, "MVP");
+            U_RESOLUTION  = glGetUniformLocation(shader_prog.ID, "u_resolution");
+            U_MOUSE       = glGetUniformLocation(shader_prog.ID, "u_mouse");
+            U_SCROLL      = glGetUniformLocation(shader_prog.ID, "u_scroll");
+            U_TIME        = glGetUniformLocation(shader_prog.ID, "u_time");
+            U_CAMERA      = glGetUniformLocation(shader_prog.ID, "MVP");
+
+            uniforms->loading = false;
         }
 
         glClearColor(0.f, 0.f, 0.f, 1.0f);
@@ -48,13 +49,13 @@ int main() {
         glUniform1f(U_SCROLL, uniforms->scroll);        
         glUniform1f(U_TIME, time);
         glUniformMatrix4fv(U_CAMERA, 1, GL_FALSE, \
-            &getCamera(1.0f, 3.0*cos(time), 3.0/tan(time), 3.0*sin(time))[0][0]);
+            &getCamera(1.0f, 3.0*cos(time), 3.0, 3.0*sin(time))[0][0]);
         
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
-
-		//glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0); 
-        glDrawArrays(GL_TRIANGLES, 0, 12*3);
+        
+		triforce_verts.DrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0); 
+        box_verts.DrawArrays(GL_TRIANGLES, 0, 12*3);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
