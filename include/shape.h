@@ -32,7 +32,7 @@ GLuint triforce_indices[] =
 
 // Our vertices. Three consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
 // A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
-GLfloat g_vertex_buffer_data[] = {
+GLfloat cube_vertices[] = {
     -1.0f,-1.0f,-1.0f, // triangle 1 : begin
     -1.0f,-1.0f, 1.0f,
     -1.0f, 1.0f, 1.0f, // triangle 1 : end
@@ -72,7 +72,7 @@ GLfloat g_vertex_buffer_data[] = {
 };
 
 // One color for each vertex. They were generated randomly.
-GLfloat g_color_buffer_data[] = {
+GLfloat cube_colors[] = {
     0.583f,  0.771f,  0.014f,
     0.609f,  0.115f,  0.436f,
     0.327f,  0.483f,  0.844f,

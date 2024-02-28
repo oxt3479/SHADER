@@ -9,8 +9,7 @@ int main() {
     ShaderProgram shader_prog("../programs/cube-vertex.glsl", \
                                 "../programs/cube-fragment.glsl", false);
 
-    VAO box_verts(g_vertex_buffer_data, sizeof(g_vertex_buffer_data),\
-        g_color_buffer_data, sizeof(g_color_buffer_data));
+    VAO box_verts(cube_vertices, sizeof(cube_vertices), cube_colors, sizeof(cube_colors));
     box_verts.LinkAttrib(box_verts.vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
 	box_verts.LinkAttrib(box_verts.cbo, 1, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
 
