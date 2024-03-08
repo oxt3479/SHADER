@@ -1,3 +1,6 @@
+#ifndef SHADEROBJECTS_H
+#define SHADEROBJECTS_H
+
 #include <glad/glad.h>
 
 class VBO {
@@ -30,6 +33,20 @@ public:
 	void Delete();
 };
 
+class UBO {
+public:
+	GLuint ID;
+	GLfloat* vertices;
+	GLsizeiptr size;
+	
+	UBO();
+	UBO(GLfloat* vertices, GLsizeiptr size);
+
+	void Bind();
+	void Unbind();
+	void Delete();
+};
+
 class VAO {
 public:
 	GLuint ID;
@@ -49,3 +66,5 @@ public:
 	void Unbind();
 	void Delete();
 };
+
+#endif

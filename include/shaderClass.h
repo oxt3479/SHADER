@@ -1,3 +1,6 @@
+#ifndef SHADERCLASS_H
+#define SHADERCLASS_H
+
 #include <glad/glad.h>
 #include <string>
 #include <fstream>
@@ -5,7 +8,7 @@
 #include <iostream>
 #include <cerrno>
 
-std::string get_file_contents(const char* filename);
+std::string get_file_contents(const std::string& filename, const std::string& parentPath);
 
 class ShaderProgram {
 public:
@@ -22,3 +25,5 @@ private:
 	void checkCompileErrors(unsigned int shader, const char* type);
 	void checkLinkingErrors(unsigned int program);
 };
+
+#endif

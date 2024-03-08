@@ -24,6 +24,17 @@ void EBO::Update()  { glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, GL_ST
 void EBO::Unbind()	{ glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
 void EBO::Delete()  { glDeleteBuffers(1, &ID); }
 
+// Uniform Buffer Object
+UBO::UBO() {}
+UBO::UBO(GLfloat* vertices, GLsizeiptr size) {
+	glGenBuffers(1, &ID);
+	glBindBuffer(GL_UNIFORM_BUFFER, ID);
+	glBufferData(GL_UNIFORM_BUFFER, size, vertices, GL_STATIC_DRAW);
+}
+void UBO::Bind() 	{ glBindBuffer(GL_UNIFORM_BUFFER, ID); }
+void UBO::Unbind()	{ glBindBuffer(GL_UNIFORM_BUFFER, 0); }
+void UBO::Delete() 	{ glDeleteBuffers(1, &ID); }
+
 // Vertext Array Object
 VAO::VAO(GLfloat* vertices, GLsizeiptr verticesSize, \
 			GLuint* indices, GLsizeiptr indicesSize) {
