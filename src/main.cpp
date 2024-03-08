@@ -2,6 +2,7 @@
 #include "shaderClass.h"
 #include "shaderObjects.h"
 #include "shape.h"
+#include "models.h"
 
 int main() {
     GLFWwindow* window = initializeWindow(768, 768, "SHADER");
@@ -9,15 +10,13 @@ int main() {
     ShaderProgram shader_prog("../programs/cube-vertex.glsl", \
                                 "../programs/cube-fragment.glsl", false);
 
-    VAO box_verts(cube_vertices, sizeof(cube_vertices), cube_colors, sizeof(cube_colors));
-    box_verts.LinkAttrib(box_verts.vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
-	box_verts.LinkAttrib(box_verts.cbo, 1, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
+    std::vector<VAO> model_vaos = load_model("../models/demon_a_obj/model.obj");
 
-    for (int i=0; i<36; i++) { triforce_floats[i] *= 5.0; } // really just to help us see both...
-
-    VAO triforce_verts(triforce_floats, sizeof(triforce_floats), triforce_indices, sizeof(triforce_indices));
-    triforce_verts.LinkAttrib(triforce_verts.vbo, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
-	triforce_verts.LinkAttrib(triforce_verts.vbo, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    for (int i=0; i < (int) model_vaos.size(); i++) {
+        model_vaos[i].LinkAttrib(model_vaos[i].vbo, 0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
+        model_vaos[i].LinkAttrib(model_vaos[i].vbo, 1, 3, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+        model_vaos[i].LinkAttrib(model_vaos[i].vbo, 2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    }
 
     Uniforms* uniforms  = getUniforms(window);
 
@@ -53,8 +52,9 @@ int main() {
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
         
-		triforce_verts.DrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0); 
-        box_verts.DrawArrays(GL_TRIANGLES, 0, 12*3);
+        for (int i=0; i < (int) model_vaos.size(); i++) {
+            model_vaos[i].DrawElements(GL_TRIANGLES, 10914, GL_UNSIGNED_INT, 0);
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
