@@ -7,7 +7,7 @@
 #include <glad/glad.h>
 #include <iostream>
 #include <vector>
-#include "shaderObjects.h"
+#include "bufferObjects.h"
 
 std::vector<VAO> load_model(const char * objFile);
 

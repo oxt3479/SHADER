@@ -1,5 +1,5 @@
-#ifndef SHADEROBJECTS_H
-#define SHADEROBJECTS_H
+#ifndef BUFFEROBJECTS_H
+#define BUFFEROBJECTS_H
 
 #include <glad/glad.h>
 

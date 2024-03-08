@@ -1,4 +1,4 @@
-#include "shaderObjects.h"
+#include "bufferObjects.h"
 
 // Vertex Buffer Object
 VBO::VBO() {}

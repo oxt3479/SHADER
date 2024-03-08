@@ -1,6 +1,6 @@
 #include "window.h"
 #include "shaderClass.h"
-#include "shaderObjects.h"
+#include "bufferObjects.h"
 #include "shape.h"
 #include "models.h"
 
