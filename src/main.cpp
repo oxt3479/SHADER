@@ -7,22 +7,27 @@
 int main() {
     GLFWwindow* window = initializeWindow(768, 768, "SHADER");
         
-    ShaderProgram shader_prog("../programs/cube-vertex.glsl", \
-                                "../programs/cube-fragment.glsl", false);
+    ShaderProgram shader_prog("programs/cube-vertex.glsl", \
+                                "programs/cube-fragment.glsl", false);
 
-    std::vector<VAO> model_vaos = load_model("../models/demon_a_obj/model.obj");
+    std::vector<VAO> model_vaos, frame;
+    for (int i=1; i < 31; i++){
+        
+        std::string fileName = "models/demon_a_obj/sprint_draft_2/demon_a_rigg_"+
+            std::string(6 - std::to_string(i).length(), '0') + std::to_string(i)+".obj";
 
-    for (int i=0; i < (int) model_vaos.size(); i++) {
-        model_vaos[i].LinkAttrib(model_vaos[i].vbo, 0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
-        model_vaos[i].LinkAttrib(model_vaos[i].vbo, 1, 3, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-        model_vaos[i].LinkAttrib(model_vaos[i].vbo, 2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+        frame = load_model(fileName.c_str());
+        model_vaos.push_back(frame[0]);
+
     }
 
     Uniforms* uniforms  = getUniforms(window);
 
     float time;
+    float framerate = 24.0f;
+    uint current_frame = 0;
     GLint U_RESOLUTION, U_MOUSE, U_SCROLL, U_TIME, U_CAMERA;
-    
+
     while (!glfwWindowShouldClose(window)) {
         if (uniforms->loading) {
             shader_prog.Load();
@@ -52,9 +57,8 @@ int main() {
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
         
-        for (int i=0; i < (int) model_vaos.size(); i++) {
-            model_vaos[i].DrawElements(GL_TRIANGLES, 10914, GL_UNSIGNED_INT, 0);
-        }
+        current_frame = (static_cast<uint>(time*framerate)) % model_vaos.size();        
+        model_vaos[current_frame].DrawElements(GL_TRIANGLES, 10914, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
