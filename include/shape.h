@@ -1,5 +1,16 @@
+#ifndef SHAPE_H
+#define SHAPE_H
+
 #include <glad/glad.h>
 #include <cmath>
+#include <glm/vec3.hpp>
+#include <glm/geometric.hpp>
+#include <glm/gtx/vector_angle.hpp>
+
+#ifndef PHI
+#define PHI 1.61803f
+#endif
+
 GLfloat vertices[] =
 {
     -1.0f,  1.0f, // Top-left
@@ -110,3 +121,76 @@ GLfloat cube_colors[] = {
     0.820f,  0.883f,  0.371f,
     0.982f,  0.099f,  0.879f
 };
+
+GLfloat dodecahedron_vertices[] = {
+    0.0f, 1.0f+1.0f/PHI, 1.0f-1.0f/pow(PHI, 2),
+    0.0f, -1.0f-1.0f/PHI, -1.0f+1.0f/pow(PHI, 2),
+    0.0f, -1.0f-1.0f/PHI, 1.0f-1.0f/pow(PHI, 2),
+    0.0f, 1.0f+1.0f/PHI, -1.0f+1.0f/pow(PHI, 2),
+
+    1.0f+1.0f/PHI, 1.0f-1.0f/pow(PHI, 2), 0.0f,
+    -1.0f-1.0f/PHI, -1.0f+1.0f/pow(PHI, 2), 0.0f,
+    -1.0f-1.0f/PHI, 1.0f-1.0f/pow(PHI, 2), 0.0f,
+    1.0f+1.0f/PHI, -1.0f+1.0f/pow(PHI, 2), 0.0f,
+
+    1.0f-1.0f/pow(PHI, 2), 0.0f, 1.0f+1.0f/PHI,
+    -1.0f+1.0f/pow(PHI, 2), 0.0f, -1.0f-1.0f/PHI,
+    1.0f-1.0f/pow(PHI, 2), 0.0f, -1.0f-1.0f/PHI,
+    -1.0f+1.0f/pow(PHI, 2), 0.0f, 1.0f+1.0f/PHI,
+
+    1.0f, 1.0f, 1.0f,
+    1.0f, 1.0f, -1.0f,
+    1.0f, -1.0f, 1.0f,
+    -1.0f, 1.0f, 1.0f,
+    1.0f, -1.0f, -1.0f,
+    -1.0f, -1.0f, 1.0f,
+    -1.0f, 1.0f, -1.0f,
+    -1.0f, -1.0f, -1.0f
+};
+
+GLfloat dodecahedron_colors[] = {
+    0.583f,  0.771f,  0.014f,
+    0.609f,  0.115f,  0.436f,
+    0.327f,  0.483f,  0.844f,
+    0.822f,  0.569f,  0.201f,
+    0.435f,  0.602f,  0.223f,
+    0.310f,  0.747f,  0.185f,
+    0.597f,  0.770f,  0.761f,
+    0.559f,  0.436f,  0.730f,
+    0.359f,  0.583f,  0.152f,
+    0.483f,  0.596f,  0.789f,
+    0.559f,  0.861f,  0.639f,
+    0.195f,  0.548f,  0.859f,
+}; // Leaves the 'cube - corners' black (+/-1,+/-1,+/-1) for debug.
+
+GLuint dodecahedron_pentagon_indices[] = {
+    12, 13, 4, 0, 3, // top-R, top-L, top, bottom-R, bottom-L (R>0, L<0)
+    12, 14, 8, 4, 7,
+    12, 15, 0, 8, 11,
+    13, 16, 10, 4, 7,
+    13, 18, 3, 10, 9,
+    14, 16, 7, 2, 1,
+    14, 17, 2, 8, 11,
+    15, 17, 11, 6, 5,
+    15, 18, 6, 0, 3,
+    16, 19, 1, 10, 9,
+    17, 19, 5, 2, 1,
+    18, 19, 9, 6, 5,
+};
+
+GLuint dodecahedron_indices[] = {
+    4, 12, 0,   4, 13, 3,   4, 0, 3, // right tri, left tri, center tri. (all meet at top)
+    8, 12, 4,   8, 14, 7,   8, 4, 7,
+    0, 12, 8,   0, 15, 11,  0, 8, 11,
+    10, 13, 4,  10, 16, 7,  10, 4, 7,
+    3, 13, 10,  3, 18, 9,   3, 10, 9,
+    7, 14, 2,   7, 16, 1,   7, 2, 1,
+    2, 14, 8,   2, 17, 11,  2, 8, 11,
+    11, 15, 6,  11, 17, 5,  11, 6, 5,
+    6, 15, 0,   6, 18, 3,   6, 0, 3,
+    1, 16, 10,  1, 19, 9,   1, 10, 9,
+    5, 17, 2,   5, 19, 1,   5, 2, 1,
+    9, 18, 6,   9, 19, 5,   9, 6, 5
+};
+
+#endif

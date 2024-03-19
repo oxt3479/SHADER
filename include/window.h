@@ -1,12 +1,11 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
+#include "world.h"
+#include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
-
-glm::mat4 getCamera(float ratio, float x, float y, float z);
 
 struct Uniforms
 {
@@ -14,8 +13,11 @@ struct Uniforms
     float mouseX, mouseY;
     float scroll = 1.0;
     bool loading = true;
+    PlayerLocation* player_location;
 };
 Uniforms* getUniforms(GLFWwindow* window);
+
+glm::mat4 getCamera(GLFWwindow* window);
 
 GLFWwindow* initializeWindow(unsigned int start_width, unsigned int start_height,\
     const char* title);

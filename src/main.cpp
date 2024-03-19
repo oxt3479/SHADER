@@ -10,22 +10,20 @@ int main() {
     ShaderProgram shader_prog("programs/cube-vertex.glsl", \
                                 "programs/cube-fragment.glsl", false);
 
-    std::vector<VAO> model_vaos, frame;
-    for (int i=1; i < 31; i++){
-        
-        std::string fileName = "models/demon_a_obj/sprint_draft_2/demon_a_rigg_"+
-            std::string(6 - std::to_string(i).length(), '0') + std::to_string(i)+".obj";
+    float time;
+    PlayerLocation player_location(&time);
+    WorldCell world_cell = WorldCell();
+    player_location.reference_cell = &world_cell;
 
-        frame = load_model(fileName.c_str());
-        model_vaos.push_back(frame[0]);
-
-    }
+    VAO dodecahedron_vao((GLfloat*) world_cell.cell_verts, sizeof(world_cell.cell_verts), 
+                        dodecahedron_colors, sizeof(dodecahedron_colors), 
+                            // TODO : pointless colors, from shape.h... (just for experimentation)
+                        (GLuint*) world_cell.cell_indxs, sizeof(world_cell.cell_indxs));
+    dodecahedron_vao.LinkAttrib(dodecahedron_vao.vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
+    dodecahedron_vao.LinkAttrib(dodecahedron_vao.cbo, 1, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
 
     Uniforms* uniforms  = getUniforms(window);
-
-    float time;
-    float framerate = 24.0f;
-    uint current_frame = 0;
+    
     GLint U_RESOLUTION, U_MOUSE, U_SCROLL, U_TIME, U_CAMERA;
 
     while (!glfwWindowShouldClose(window)) {
@@ -40,6 +38,7 @@ int main() {
             U_CAMERA      = glGetUniformLocation(shader_prog.ID, "MVP");
 
             uniforms->loading = false;
+            uniforms->player_location = &player_location;
         }
 
         glClearColor(0.f, 0.f, 0.f, 1.0f);
@@ -52,13 +51,12 @@ int main() {
         glUniform1f(U_SCROLL, uniforms->scroll);        
         glUniform1f(U_TIME, time);
         glUniformMatrix4fv(U_CAMERA, 1, GL_FALSE, \
-            &getCamera(1.0f, 3.0*cos(time), 3.0, 3.0*sin(time))[0][0]);
+            &getCamera(window)[0][0]);
         
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
-        
-        current_frame = (static_cast<uint>(time*framerate)) % model_vaos.size();        
-        model_vaos[current_frame].DrawElements(GL_TRIANGLES, 10914, GL_UNSIGNED_INT, 0);
+
+        dodecahedron_vao.DrawElements(GL_TRIANGLES, 12*9, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

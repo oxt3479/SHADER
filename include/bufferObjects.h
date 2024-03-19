@@ -54,7 +54,9 @@ public:
 	VBO cbo;
 	EBO ebo;
 	
-	VAO(GLfloat* vertices, GLsizeiptr verticesSize, GLuint* indices, GLsizeiptr indicessSize);
+	VAO(GLfloat* vertices, GLsizeiptr verticesSize, GLuint* indices, GLsizeiptr indicesSize);
+	VAO(GLfloat* vertices, GLsizeiptr verticesSize, GLfloat* colors, GLsizeiptr colorsSize, \
+		GLuint* indices, GLsizeiptr indicesSize);
 	VAO(GLfloat* vertices, GLsizeiptr verticesSize, GLfloat* colors, GLsizeiptr colorsSize);
 	VAO(GLfloat* vertices, GLsizeiptr verticesSize);
 	void LinkAttrib(VBO& VBO, GLuint attrIdx, GLuint numComponents, \

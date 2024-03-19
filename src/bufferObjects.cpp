@@ -45,6 +45,15 @@ VAO::VAO(GLfloat* vertices, GLsizeiptr verticesSize, \
 	ebo = EBO(indices, indicesSize);
 }
 VAO::VAO(GLfloat* vertices, GLsizeiptr verticesSize, \
+		GLfloat* colors, GLsizeiptr colorsSize, \
+		GLuint* indices, GLsizeiptr indicesSize) : vbo(), cbo(), ebo() {
+	glGenVertexArrays(1, &ID);
+	glBindVertexArray(ID);
+	vbo = VBO(vertices, verticesSize);
+	cbo = VBO(colors, colorsSize);
+	ebo = EBO(indices, indicesSize);
+}
+VAO::VAO(GLfloat* vertices, GLsizeiptr verticesSize, \
 			GLfloat* colors, GLsizeiptr colorsSize) : vbo(), cbo() {
 	glGenVertexArrays(1, &ID);
 	glBindVertexArray(ID);
