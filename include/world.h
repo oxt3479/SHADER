@@ -113,7 +113,7 @@ public:
     
     PlayerLocation(float * time);
     glm::mat4 getView(float x, float y);
-    glm::mat4 getModel();
+    glm::mat4 getModel(std::array<bool, 4> WASD);
     WorldCell* reference_cell = new WorldCell();
     
 private:
@@ -121,11 +121,15 @@ private:
     float mx = 0.0f;
     float my = 0.0f;
     float height = 0.333f;//... seems good to me
+    float movement_scale = 1.0f/10000.0f;
     uint floor_indx;
 
     glm::vec3 head = glm::vec3(0,0,0);
     glm::vec3 feet = glm::vec3(0,0,-height); 
     glm::vec3 focus = glm::vec3(1,0,0);
+        /* NOTE: feet/focus are relative to the head!
+        i.e. the actuall coordinates of feet/focus:
+        head + feet / head + focus*/
     glm::mat4 Model = glm::mat4(1.0f);
 
     uint getFloorIndex();

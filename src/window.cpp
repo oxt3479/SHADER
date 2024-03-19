@@ -1,16 +1,24 @@
 #include "window.h"
 
+std::array<bool, 4> Uniforms::getWASD() { 
+    return {key_states[GLFW_KEY_W], key_states[GLFW_KEY_A], 
+            key_states[GLFW_KEY_S], key_states[GLFW_KEY_D]};
+}
+
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     Uniforms* uniforms = getUniforms(window);
-    if( key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, true);
-    } else {
-        if ( key == GLFW_KEY_SPACE && action == GLFW_PRESS ) {
+    uniforms->loading = false;
+
+    if (action == GLFW_PRESS) {
+        if (key == GLFW_KEY_ESCAPE) {
+            glfwSetWindowShouldClose(window, true);
+        } else if (key == GLFW_KEY_SPACE) {
             uniforms->loading = true;
             std::cout << "Reloading Shaders" << std::endl;
-        } else {
-            uniforms->loading = false;
         }
+        uniforms->key_states[key] = true;
+    } else if (action == GLFW_RELEASE) {
+        uniforms->key_states[key] = false;
     }
 }
 
@@ -82,7 +90,7 @@ glm::mat4 getCamera(GLFWwindow* window) {
     glm::mat4 Projection    = glm::perspective(glm::radians(89.0f), ratio, 0.1f, 10.0f);
     glm::mat4 View          = player_location->getView( uniforms->mouseX/float(uniforms->windWidth),
                                                         uniforms->mouseY/float(uniforms->windHeight));
-    glm::mat4 Model         = player_location->getModel();
+    glm::mat4 Model         = player_location->getModel( uniforms->getWASD() );
     glm::mat4 mvp           = Projection * View * Model;
     return mvp;
 }

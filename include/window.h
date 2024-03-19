@@ -2,6 +2,7 @@
 #define WINDOW_H
 
 #include "world.h"
+#include <array>
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -14,6 +15,8 @@ struct Uniforms
     float scroll = 1.0;
     bool loading = true;
     PlayerLocation* player_location;
+    bool key_states[1024] = {false};
+    std::array<bool, 4> getWASD();
 };
 Uniforms* getUniforms(GLFWwindow* window);
 

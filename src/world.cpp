@@ -87,18 +87,24 @@ mat4 PlayerLocation::getView(float x, float y) {
     );// since this is view, keep the origin at 0, and not head...
     return View;
 };
-mat4 PlayerLocation::getModel() {    
-    /* here we account for the head's displacement... not sure if having
-    the mat4s seperated is helpful... TODO*/
+mat4 PlayerLocation::getModel(std::array<bool, 4> WASD) {
+    vec3 left_right = normalize(cross(focus, feet));
+    vec3 front_back = normalize(cross(left_right, feet));
+    if (WASD[0]) Model = translate(Model, front_back*movement_scale);
+    if (WASD[1]) Model = translate(Model, -left_right*movement_scale);
+    if (WASD[2]) Model = translate(Model, -front_back*movement_scale);
+    if (WASD[3]) Model = translate(Model, left_right*movement_scale);
+
     return Model;
 };
 uint PlayerLocation::getFloorIndex() {
-    /*Given arbitrary head/feet this gives the closest aligned
-    surface normal in the dodecahedron defining the cell*/
+    /*Using the players feet this gives the closest aligned
+    surface normal in the dodecahedron defining the cell
+    feet is the displacement from the head*/
     float min = 0.0;
     int min_idx = 0;
     for (unsigned i; i < 12; i++) {
-        float product = dot(reference_cell->floor_norms[i], head-feet);
+        float product = dot(reference_cell->floor_norms[i], -feet);
         if (product < min) {
             min = product;
             min_idx = i;
@@ -115,7 +121,7 @@ void PlayerLocation::updateFocus(float x, float y) {
     float dx = (x-mx < 0.1) ? x-mx : 0.1;
     float dy = (y-my < 0.1) ? y-my : 0.1;
 
-    focus = normalize(focus) + (dx*horizontal) + (dy*vertical);
+    focus = normalize(normalize(focus) + (dx*horizontal) + (dy*vertical));
 
     mx = x;
     my = y;
