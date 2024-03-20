@@ -15,8 +15,6 @@
 #include <glm/vec4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#define MAX_WORLD_SIZE 128
-
 struct CellSide {
     GLfloat* vertices;
     GLuint* indices;
@@ -114,34 +112,6 @@ struct WorldCell {
     std::array<int, 3> cell_id;
     glm::mat4 cell_matrix;
 
-};
-
-class PlayerLocation {
-public:
-    
-    PlayerLocation(float * time);
-    glm::mat4 getView(float x, float y);
-    glm::mat4 getModel(std::array<bool, 4> WASD);
-    WorldCell* reference_cell = new WorldCell();
-    
-private:
-    float * time;
-    float mx = 0.0f;
-    float my = 0.0f;
-    float height = 0.333f;//... seems good to me
-    float movement_scale = 1.0f/10000.0f;
-    uint floor_indx;
-
-    glm::vec3 head = glm::vec3(0,0,0);
-    glm::vec3 feet = glm::vec3(0,0,-height); 
-    glm::vec3 focus = glm::vec3(1,0,0);
-        /* NOTE: feet/focus are relative to the head!
-        i.e. the actuall coordinates of feet/focus:
-        head + feet / head + focus*/
-    glm::mat4 Model = glm::mat4(1.0f);
-
-    uint getFloorIndex();
-    void updateFocus(float x, float y);
 };
 
 #endif
