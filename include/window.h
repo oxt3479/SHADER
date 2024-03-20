@@ -14,7 +14,7 @@ struct Uniforms
     float mouseX, mouseY;
     float scroll = 1.0;
     bool loading = true;
-    PlayerLocation* player_location;
+    PlayerContext* player_context;
     bool key_states[1024] = {false};
     std::array<bool, 4> getWASD();
 };

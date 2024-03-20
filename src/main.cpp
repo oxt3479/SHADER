@@ -1,29 +1,20 @@
 #include "window.h"
 #include "shaderClass.h"
 #include "bufferObjects.h"
-#include "shape.h"
 #include "models.h"
 
 int main() {
     GLFWwindow* window = initializeWindow(768, 768, "SHADER");
         
-    ShaderProgram shader_prog("programs/cube-vertex.glsl", \
+    ShaderProgram shader_prog("programs/minimum-vertex.glsl", \
                                 "programs/cube-fragment.glsl", false);
 
-    float time;
-    PlayerLocation player_location(&time);
-    WorldCell world_cell = WorldCell();
-    player_location.reference_cell = &world_cell;
-
-    VAO dodecahedron_vao((GLfloat*) world_cell.cell_verts, sizeof(world_cell.cell_verts), 
-                        dodecahedron_colors, sizeof(dodecahedron_colors), 
-                            // TODO : pointless colors, from shape.h... (just for experimentation)
-                        (GLuint*) world_cell.cell_indxs, sizeof(world_cell.cell_indxs));
-    dodecahedron_vao.LinkAttrib(dodecahedron_vao.vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
-    dodecahedron_vao.LinkAttrib(dodecahedron_vao.cbo, 1, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
+    PlayerContext player_context;
+    player_context.linkPlayerCellVAOs();
 
     Uniforms* uniforms  = getUniforms(window);
     
+    float time;    
     GLint U_RESOLUTION, U_MOUSE, U_SCROLL, U_TIME, U_CAMERA;
 
     while (!glfwWindowShouldClose(window)) {
@@ -38,7 +29,7 @@ int main() {
             U_CAMERA      = glGetUniformLocation(shader_prog.ID, "MVP");
 
             uniforms->loading = false;
-            uniforms->player_location = &player_location;
+            uniforms->player_context = &player_context;
         }
 
         glClearColor(0.f, 0.f, 0.f, 1.0f);
@@ -56,7 +47,7 @@ int main() {
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
 
-        dodecahedron_vao.DrawElements(GL_TRIANGLES, 12*9, GL_UNSIGNED_INT, 0);
+        player_context.drawPlayerCellVAOs();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

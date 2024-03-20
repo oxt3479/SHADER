@@ -1,13 +1,7 @@
 #include "window.h"
 
-std::array<bool, 4> Uniforms::getWASD() { 
-    return {key_states[GLFW_KEY_W], key_states[GLFW_KEY_A], 
-            key_states[GLFW_KEY_S], key_states[GLFW_KEY_D]};
-}
-
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     Uniforms* uniforms = getUniforms(window);
-    uniforms->loading = false;
 
     if (action == GLFW_PRESS) {
         if (key == GLFW_KEY_ESCAPE) {
@@ -81,9 +75,15 @@ Uniforms* getUniforms(GLFWwindow* window) {
     return static_cast<Uniforms*>(glfwGetWindowUserPointer(window));
 }
 
+std::array<bool, 4> Uniforms::getWASD() { 
+    return {key_states[GLFW_KEY_W], key_states[GLFW_KEY_A], 
+            key_states[GLFW_KEY_S], key_states[GLFW_KEY_D]};
+}
+
 glm::mat4 getCamera(GLFWwindow* window) {
     Uniforms* uniforms = getUniforms(window);
-    PlayerLocation * player_location = uniforms->player_location;
+    //PlayerLocation* player_location = uniforms->player_context->player_location;
+    PlayerLocation* player_location = uniforms->player_context->player_location;
     float ratio = float(uniforms->windHeight)/float(uniforms->windWidth);
     
     // Projection matrix: 90° Field of View, display range: 0.1 unit <-> 100 units
