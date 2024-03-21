@@ -10,9 +10,13 @@ void PlayerContext::linkPlayerCellVAOs() {
     WorldCell first_cell = *player_location->reference_cell;
     VAO first_vao(
         (GLfloat*) first_cell.cell_verts, sizeof(first_cell.cell_verts),
+        (GLfloat*) &first_cell.cell_matrix, sizeof(glm::mat4),
         (GLuint*) first_cell.cell_indxs, sizeof(first_cell.cell_indxs)
     );
+
     first_vao.LinkAttrib(first_vao.vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
+    first_vao.LinkMat4(first_vao.cbo, 1);
+
     all_vaos.push_back(first_vao);
 };
 

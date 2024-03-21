@@ -61,6 +61,7 @@ public:
 	VAO(GLfloat* vertices, GLsizeiptr verticesSize);
 	void LinkAttrib(VBO& VBO, GLuint attrIdx, GLuint numComponents, \
 		GLenum type, GLsizeiptr stride, void* offset);
+	void LinkMat4(VBO& VBO, GLuint attridx);
 	void DrawElements(GLenum mode, GLsizei count, GLenum type, const void *indices);
 	void DrawArrays(GLenum mode, GLint first, GLsizei count);
 

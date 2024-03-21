@@ -1,6 +1,7 @@
 #version 410 core
 
 layout(location = 0) in vec3 model_verts;
+layout(location = 1) in mat4 DISP;
 
 uniform mat4 MVP;
 
@@ -15,5 +16,5 @@ void main(){
     // to produce the color of each fragment
 
     fragmentColor = vec3(rand(model_verts.xy), rand(model_verts.xz), rand(model_verts.yz));
-    gl_Position = MVP * vec4(model_verts, 1.0);
+    gl_Position = MVP * DISP * vec4(model_verts, 1.0);
 }

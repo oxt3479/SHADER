@@ -76,6 +76,25 @@ void VAO::LinkAttrib(VBO& VBO, GLuint attrIdx, GLuint numComponents, \
 	VBO.Unbind();
 	/*Attribute index, Num attributes, Type attributes, Stride Offset*/
 }
+void VAO::LinkMat4(VBO& VBO, GLuint attrIdx) {
+	/*We can make some assumptions for a Mat4 that don't generalize to all
+	VBO bindings...*/
+	VBO.Bind();
+	glEnableVertexAttribArray(attrIdx);
+	glEnableVertexAttribArray(attrIdx + 1);
+	glEnableVertexAttribArray(attrIdx + 2);
+	glEnableVertexAttribArray(attrIdx + 3);
+	glVertexAttribPointer(attrIdx,     4, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*16, (void*)0);
+	glVertexAttribPointer(attrIdx + 1, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*16, (void*)(sizeof(GLfloat)*4));
+	glVertexAttribPointer(attrIdx + 2, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*16, (void*)(sizeof(GLfloat)*8));
+	glVertexAttribPointer(attrIdx + 3, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*16, (void*)(sizeof(GLfloat)*12));
+	glVertexAttribDivisor(attrIdx, 1);
+	glVertexAttribDivisor(attrIdx+1, 1);
+	glVertexAttribDivisor(attrIdx+2, 1);
+	glVertexAttribDivisor(attrIdx+3, 1);
+	VBO.Unbind();
+	/*NOTE: When you bind a mat4, you relenquish the subsequent attribute indeces for each column*/
+};
 void VAO::DrawElements(GLenum mode, GLsizei count, GLenum type, const void *indices) {
 	Bind();
 	glDrawElements(mode, count, type, indices); 
