@@ -1,5 +1,7 @@
 #include "window.h"
 
+bool window_is_focused = true;
+
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     Uniforms* uniforms = getUniforms(window);
 
@@ -8,7 +10,15 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             glfwSetWindowShouldClose(window, true);
         } else if (key == GLFW_KEY_SPACE) {
             uniforms->loading = true;
-            std::cout << "Reloading Shaders" << std::endl;
+            std::cout << "Reloading Shaders" << std::endl;            
+        } else if (key == GLFW_KEY_TAB) {
+            if (window_is_focused) {
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                window_is_focused = false;
+            } else {
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                window_is_focused = true;
+            }
         }
         uniforms->key_states[key] = true;
     } else if (action == GLFW_RELEASE) {
@@ -84,7 +94,7 @@ glm::mat4 getCamera(GLFWwindow* window) {
     Uniforms* uniforms = getUniforms(window);
     //PlayerLocation* player_location = uniforms->player_context->player_location;
     PlayerLocation* player_location = uniforms->player_context->player_location;
-    float ratio = float(uniforms->windHeight)/float(uniforms->windWidth);
+    float ratio = float(uniforms->windWidth)/float(uniforms->windHeight);
     
     // Projection matrix: 90° Field of View, display range: 0.1 unit <-> 100 units
     glm::mat4 Projection    = glm::perspective(glm::radians(89.0f), ratio, 0.1f, 10.0f);
