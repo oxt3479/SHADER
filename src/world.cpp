@@ -6,18 +6,33 @@ PlayerContext::PlayerContext() {
 
 };
 
+VAO cellToVAO(WorldCell cell) {
+    VAO cell_vao(
+        (GLfloat*) cell.cell_verts, sizeof(cell.cell_verts),
+        (GLfloat*) &cell.cell_matrix, sizeof(glm::mat4),
+        (GLuint*) cell.cell_indxs, sizeof(cell.cell_indxs)
+    );
+    cell_vao.LinkAttrib(cell_vao.vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
+    cell_vao.LinkMat4(cell_vao.cbo, 1);
+    return cell_vao;
+};
+
 void PlayerContext::linkPlayerCellVAOs() {
     WorldCell first_cell = *player_location->reference_cell;
-    VAO first_vao(
-        (GLfloat*) first_cell.cell_verts, sizeof(first_cell.cell_verts),
-        (GLfloat*) &first_cell.cell_matrix, sizeof(glm::mat4),
-        (GLuint*) first_cell.cell_indxs, sizeof(first_cell.cell_indxs)
-    );
+    all_vaos.push_back(cellToVAO(first_cell));
+    std::array<int, 3> new_id;
+    for (int i = 0; i < 2; i++) {
+        new_id = first_cell.getNeighborID(i);
+        
+        // Check if this neighbor exists; if so don't make a new one.
+        WorldCell* new_cell = world_map.cellFromID(new_id);
+        if (new_cell == NULL) {
+            new_cell = new WorldCell(new_id, first_cell.getNeighborMat(i));
+            world_map.addCell(*new_cell);
+        }
 
-    first_vao.LinkAttrib(first_vao.vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
-    first_vao.LinkMat4(first_vao.cbo, 1);
-
-    all_vaos.push_back(first_vao);
+        all_vaos.push_back(cellToVAO(*new_cell));
+    }
 };
 
 void PlayerContext::drawPlayerCellVAOs() {

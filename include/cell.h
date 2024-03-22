@@ -27,7 +27,9 @@ struct WorldCell {
     /* The world is built from dodecahedron primitives.... why?
     BECAUSE THEY ARE MAGIC - no furthur elaboration will be provided.*/
     WorldCell();
-    WorldCell(std::array<int, 3> new_cell_id);
+    WorldCell(std::array<int, 3> new_cell_id, glm::mat4 new_cell_mat);
+    std::array<int, 3> getNeighborID(int side_idx);
+    glm::mat4 getNeighborMat(int side_idx);
     CellSide sides[12];    
     GLfloat cell_verts[20*3] = {
         0.0f, 1.0f+1.0f/PHI, 1.0f-1.0f/pow(PHI, 2),
