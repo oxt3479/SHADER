@@ -2,13 +2,15 @@
 
 using namespace glm;
 
+Dodecahedron ref_dodecahedron;
+
 WorldCell::WorldCell() {
     /*Simplest possible world cell initialization...,
     assumes building directly from primitve. 3 triangels per
     pentagon means +=9*/
-    GLuint* cell_indxs_ptr = cell_indxs;
+    GLuint* cell_indxs_ptr = ref_dodecahedron.prim_cell_indxs;
     for (uint i=0; i < 12; i++) {
-        sides[i].vertices = cell_verts;
+        sides[i].vertices = ref_dodecahedron.prim_cell_verts;
         sides[i].indices  = cell_indxs_ptr;
         sides[i].num_faces = 3;
 
@@ -20,9 +22,9 @@ WorldCell::WorldCell() {
 
 WorldCell::WorldCell(std::array<int, 3> new_cell_id, glm::mat4 new_cell_mat) {
     /*TODO : combine this with the alternateive initialization above somehow (redundant?)*/
-    GLuint* cell_indxs_ptr = cell_indxs;
+    GLuint* cell_indxs_ptr = ref_dodecahedron.prim_cell_indxs;
     for (uint i=0; i < 12; i++) {
-        sides[i].vertices = cell_verts;
+        sides[i].vertices = ref_dodecahedron.prim_cell_verts;
         sides[i].indices  = cell_indxs_ptr;
         sides[i].num_faces = 3;
 
@@ -56,7 +58,7 @@ std::array<int, 3> WorldCell::getNeighborID(int side_idx) {
 };
 
 glm::mat4 WorldCell::getNeighborMat(int side_idx) {
-    /*Since all of these are always the same for each index this could technically
+    /*TODO: Since all of these are always the same for each index this could technically
     be replaced with precalculated matricies...*/
     vec3 n = floor_norms[side_idx];
     glm::mat4 new_mat = mat4(

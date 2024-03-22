@@ -2,15 +2,17 @@
 
 using namespace glm;
 
+Dodecahedron dodecahedron;
+
 PlayerContext::PlayerContext() {
 
 };
 
 VAO cellToVAO(WorldCell cell) {
     VAO cell_vao(
-        (GLfloat*) cell.cell_verts, sizeof(cell.cell_verts),
+        (GLfloat*) dodecahedron.prim_cell_verts, sizeof(dodecahedron.prim_cell_verts),
         (GLfloat*) &cell.cell_matrix, sizeof(glm::mat4),
-        (GLuint*) cell.cell_indxs, sizeof(cell.cell_indxs)
+        (GLuint*) dodecahedron.prim_cell_indxs, sizeof(dodecahedron.prim_cell_indxs)
     );
     cell_vao.LinkAttrib(cell_vao.vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
     cell_vao.LinkMat4(cell_vao.cbo, 1);
@@ -21,7 +23,7 @@ void PlayerContext::linkPlayerCellVAOs() {
     WorldCell first_cell = *player_location->reference_cell;
     all_vaos.push_back(cellToVAO(first_cell));
     std::array<int, 3> new_id;
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 12; i++) {
         new_id = first_cell.getNeighborID(i);
         
         // Check if this neighbor exists; if so don't make a new one.
