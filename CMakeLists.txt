@@ -11,6 +11,10 @@ include_directories("./include/")
 #file(GLOB SHADER_FILES "${CMAKE_SOURCE_DIR}/programs/*")
 #file(COPY ${SHADER_FILES} DESTINATION "${CMAKE_BINARY_DIR}/programs")
 
+set(SHADER_DIR "${CMAKE_SOURCE_DIR}/programs")
+configure_file(config.h.in config.h)
+include_directories(${CMAKE_BINARY_DIR})
+
 file(GLOB SOURCES "src/*.cpp")
 add_executable(run "src/glad.c" ${SOURCES})
 target_link_libraries(run ${OPENGL_LIBRARIES} ${GLFW_LIBRARIES} glm::glm assimp "-ldl")
