@@ -1,40 +1,95 @@
 #include "cell.h"
-
+#include <glm/gtx/string_cast.hpp>
 using namespace glm;
 
 Dodecahedron ref_dodecahedron;
-
-WorldCell::WorldCell() {
+/* bool isReflected(std::array<int, 3> cell_id) {
+    bool is_reflected = false;
+    //Depending on whether the current WorldCell is a reflection of 
+    //the original or not, we will need to calculate the new id differently.
+    for (int i = 0; i < 3; i++) {
+        is_reflected = cell_id[i]%2 != 0;
+        if (is_reflected) break;
+    }
+    return is_reflected;
+}; */
+void buildSides(WorldCell* world_cell) {
     /*Simplest possible world cell initialization...,
     assumes building directly from primitve. 3 triangels per
-    pentagon means +=9*/
+    pentagon means +=9 
+    TODO: this may be rundnadant if ref_dodecahedron 
+    is always the same...*/
     GLuint* cell_indxs_ptr = ref_dodecahedron.prim_cell_indxs;
     for (uint i=0; i < 12; i++) {
-        sides[i].vertices = ref_dodecahedron.prim_cell_verts;
-        sides[i].indices  = cell_indxs_ptr;
-        sides[i].num_faces = 3;
-
+        world_cell->sides[i].vertices = ref_dodecahedron.prim_cell_verts;
+        world_cell->sides[i].indices  = cell_indxs_ptr;
+        world_cell->sides[i].num_faces = 3;
         cell_indxs_ptr+=9;
     }
+}
+WorldCell::WorldCell() {
+    buildSides(this);
     cell_id = {0};
     cell_matrix = mat4(1.0);
+    origin = vec3(0.0);
 };
-
-WorldCell::WorldCell(std::array<int, 3> new_cell_id, glm::mat4 new_cell_mat) {
-    /*TODO : combine this with the alternateive initialization above somehow (redundant?)*/
-    GLuint* cell_indxs_ptr = ref_dodecahedron.prim_cell_indxs;
-    for (uint i=0; i < 12; i++) {
-        sides[i].vertices = ref_dodecahedron.prim_cell_verts;
-        sides[i].indices  = cell_indxs_ptr;
-        sides[i].num_faces = 3;
-
-        cell_indxs_ptr+=9;
-    }
+const float OPOOP = 1.0f+(1.0f/PHI); // One plue one over phi.. what did you think I wrote?
+const float OPSPOOP = (1.0f/(PHI*PHI))+(1.0f/PHI); // Okay this one might even be funnier...
+const float NORMAL_SCALE = 2.0f*OPOOP*OPOOP/sqrt(OPOOP*OPOOP+OPSPOOP*OPSPOOP);
+vec3 getNeighborOffset(vec3 n) {
+    /*This mess makes n, already normal to the surface, also
+    touch the center of the face, from `this` origin to
+    the `neighbor` origin */
+    return -n * NORMAL_SCALE;
+};
+mat4 getReflectionMatrix(vec3 n) {
+    /*Gives a matrix that reflects over the corresponding
+    side's normal*/
+    return mat4(
+        vec4(-2.0f*n.x*n.x+1.0f,     -2.0f*n.y*n.x,      -2.0f*n.z*n.x,      0.0f),
+        vec4(-2.0f*n.x*n.y,          -2.0f*n.y*n.y+1.0f, -2.0f*n.z*n.y,      0.0f),
+        vec4(-2.0f*n.z*n.x,          -2.0f*n.y*n.z,      -2.0f*n.z*n.z+1.0f, 0.0f),
+        vec4(0.0f,                   0.0f,               0.0f,               1.0f)
+    );
+};
+WorldCell::WorldCell(std::array<int, 3> new_cell_id, WorldCell* parent, int side_idx) {
+    buildSides(this);
     cell_id = new_cell_id;
-    cell_matrix = new_cell_mat;
+    // Account for the reflective transform mandated by the parent in normals
+    reflection_mat = getReflectionMatrix(parent->floor_norms[side_idx]);
+    vec4 norm_four;
+    std::copy(parent->floor_norms, parent->floor_norms+12, floor_norms);
+    for (vec3& norm : floor_norms) {
+        norm_four = vec4(norm, 1.0)*reflection_mat;
+        norm = vec3(norm_four.x, norm_four.y, norm_four.z);
+    }
+    reflection_mat *= parent->reflection_mat;
+    origin = getNeighborOffset(parent->floor_norms[side_idx]) + parent->origin;
+    cell_matrix = translate(cell_matrix, origin)*reflection_mat;
 };
-
+std::size_t WorldCell::generateVerts(GLfloat* buffer, std::size_t max_size) {
+    std::memcpy(buffer, &ref_dodecahedron.prim_cell_verts, max_size);
+    return max_size;
+};
+std::size_t WorldCell::generateIndxs(GLuint* buffer, std::size_t max_size) {
+    uint elements_placed = 0;
+    std::size_t next_size;
+    std::size_t total_size = 0;
+    for (int i = 0; i < 12; i++) {
+        if (doors[i] == NULL) {
+            next_size = sides[i].num_faces*3*sizeof(GLuint);
+            if (total_size+next_size > max_size) {
+                throw std::runtime_error("Not enough space, increase MAX_CELL_SIDES");
+            }
+            std::memcpy(buffer+elements_placed, sides[i].indices, next_size);
+            elements_placed += sides[i].num_faces*3;
+            total_size += next_size;
+        }
+    }
+    return total_size;
+};
 std::array<int, 3> WorldCell::getNeighborID(int side_idx) {
+    //TODO : need an aproach that is not deraied by side_idx order!!!
     std::array<int, 3> id_array;
     switch (side_idx) {
         case 0: id_array = {1, 1, 0};   break;
@@ -52,29 +107,40 @@ std::array<int, 3> WorldCell::getNeighborID(int side_idx) {
         default:id_array = {0};
             throw std::runtime_error("Impossible side requested for id");
     }
-    for (int i = 0; i < 3; i++) id_array[i] = id_array[i] + cell_id[i];
-        // Id is offset from the current cell's id.
+    //if (!isReflected(cell_id)) {
+        for (int i = 0; i < 3; i++) id_array[i] = cell_id[i] + id_array[i];
+    //} else {
+        //for (int i = 0; i < 3; i++) id_array[i] = cell_id[i] - id_array[i];
+    //}
     return id_array;
 };
+/* mat4 WorldCell::getNeighborMat(int side_idx) {
+    mat4 new_mat;
+    vec3 origin_change, normal;
 
-glm::mat4 WorldCell::getNeighborMat(int side_idx) {
-    /*TODO: Since all of these are always the same for each index this could technically
-    be replaced with precalculated matricies...*/
-    vec3 n = floor_norms[side_idx];
-    glm::mat4 new_mat = mat4(
-        vec4(-2.0f*n.x*n.x+1.0f,     -2.0f*n.y*n.x,      -2.0f*n.z*n.x,      0.0f),
-        vec4(-2.0f*n.x*n.y,          -2.0f*n.y*n.y+1.0f, -2.0f*n.z*n.y,      0.0f),
-        vec4(-2.0f*n.z*n.x,          -2.0f*n.y*n.z,      -2.0f*n.z*n.z+1.0f, 0.0f),
-        vec4(0.0f,                   0.0f,               0.0f,               1.0f)
-    );// This matrix reflects over the corresponding normal...
-    float OPOOP = 1.0f+(1.0f/PHI); // One plue one over phi.. what did you think I wrote?
-    float OPSPOOP = (1.0f/(PHI*PHI))+(1.0f/PHI); // Okay this one might even be funnier...
+    normal = floor_norms[side_idx];
+    std::cout << to_string(floor_norms[0]) << std::endl;
+    origin_change = getNeighborOffset(normal);
+    if (isReflected(cell_id)) { 
+        std::cout << "FLIP" << std::endl;
+        normal *= -1.0f;
+    }     
 
-    n *= OPOOP*OPOOP/sqrt(OPOOP*OPOOP+OPSPOOP*OPSPOOP);
-    /*This mess makes n, already normal to the surface, also
-    touch the center of the face, from the origin. */
-    new_mat = new_mat*translate(cell_matrix, 2.0f*n);
+    new_mat = getReflectionMatrix(normal);
+    if (!isReflected(cell_id)) {
+        new_mat = translate(new_mat, origin_change+origin);
+    } else {
+        
+    }
     return new_mat;
+}; */
+void WorldCell::addDoor(int door_idx, WorldCell& destination) {
+    if (doors[door_idx] == NULL) {
+        doors[door_idx] = &destination;
+        destination.doors[door_idx] = this;
+    } /* else if (doors[door_idx] != &destination) {
+        throw std::runtime_error("World map overlapping?");
+    } */
 };
 
 bool checkTriangle(vec3 v, vec3 p1, vec3 p2, vec3 p3,
@@ -105,7 +171,6 @@ bool checkTriangle(vec3 v, vec3 p1, vec3 p2, vec3 p3,
     return true;
     
 };
-
 vec3 CellSide::findIntercept(vec3 v) {
     /* TODO:  This could be done on the GPU w CUDA or datashaders...*/
     float a,b,c;

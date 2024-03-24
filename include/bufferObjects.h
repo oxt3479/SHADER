@@ -23,6 +23,7 @@ public:
 	GLuint ID;
 	GLuint* indices;
 	GLsizeiptr size;
+	int to_draw;
 	
 	EBO();
 	EBO(GLuint* indices, GLsizeiptr size);
@@ -63,6 +64,7 @@ public:
 		GLenum type, GLsizeiptr stride, void* offset);
 	void LinkMat4(VBO& VBO, GLuint attridx);
 	void DrawElements(GLenum mode, GLsizei count, GLenum type, const void *indices);
+	void DrawElements(GLenum mode);
 	void DrawArrays(GLenum mode, GLint first, GLsizei count);
 
 	void Bind();

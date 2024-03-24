@@ -1,49 +1,96 @@
 #include "world.h"
 
+#define MAX_CELL_VERTS 20
+#define MAX_CELL_FACES 12*3
+
 using namespace glm;
 
 Dodecahedron dodecahedron;
 
 PlayerContext::PlayerContext() {
-
+    if (player_location == NULL) {
+        player_location = new PlayerLocation();
+    }
 };
-
-VAO cellToVAO(WorldCell cell) {
+VAO cellToVAO(WorldCell& cell, GLfloat* cell_vert_buff, GLuint* cell_indx_buff,\
+                             std::size_t v_buff_size, std::size_t i_buff_size) {
+    
+    std::size_t verts_size = cell.generateVerts(cell_vert_buff, v_buff_size);
+    std::size_t indxs_size = cell.generateIndxs(cell_indx_buff, i_buff_size);
+    
     VAO cell_vao(
-        (GLfloat*) dodecahedron.prim_cell_verts, sizeof(dodecahedron.prim_cell_verts),
+        (GLfloat*) cell_vert_buff, verts_size,
         (GLfloat*) &cell.cell_matrix, sizeof(glm::mat4),
-        (GLuint*) dodecahedron.prim_cell_indxs, sizeof(dodecahedron.prim_cell_indxs)
+        (GLuint*) cell_indx_buff, indxs_size
     );
+    
     cell_vao.LinkAttrib(cell_vao.vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
     cell_vao.LinkMat4(cell_vao.cbo, 1);
     return cell_vao;
 };
 
-void PlayerContext::linkPlayerCellVAOs() {
-    WorldCell first_cell = *player_location->reference_cell;
-    all_vaos.push_back(cellToVAO(first_cell));
+std::vector<WorldCell*> PlayerContext::establishNeighborhood() {    
+    std::vector<WorldCell*> neighbors = {player_location->reference_cell};
     std::array<int, 3> new_id;
-    for (int i = 0; i < 12; i++) {
-        new_id = first_cell.getNeighborID(i);
-        
-        // Check if this neighbor exists; if so don't make a new one.
-        WorldCell* new_cell = world_map.cellFromID(new_id);
-        if (new_cell == NULL) {
-            new_cell = new WorldCell(new_id, first_cell.getNeighborMat(i));
-            world_map.addCell(*new_cell);
+    int n;
+
+    auto assignNeighbors = [&](WorldCell* cell) {
+        for (int j = 0; j < 1; j++) { //rand()%12
+            n = rand()%12;
+            std::cout << "USING SIDE: " << n << std::endl;
+            // Check if this neighbor exists; if so don't make a new one.
+            new_id = cell->getNeighborID(n);
+            WorldCell* new_cell = world_map.cellFromID(new_id);
+            if (new_cell == NULL) {
+                new_cell = new WorldCell(new_id, cell, n);
+                //cell->getNeighborMat(n));
+                world_map.addCell(*new_cell);
+                std::cout << "NEW CELL : " <<
+                new_id[0] << "|" << new_id[1] << "|" << new_id[2]
+                << std::endl;
+            } else {
+                std::cout << "EXISTING CELL : " <<
+                new_id[0] << "|" << new_id[1] << "|" << new_id[2]
+                << std::endl;
+            }
+            cell->addDoor(n, *new_cell);
+            // You technically could have a neighboor without a door...
+            neighbors.push_back(new_cell);
         }
+    };
+    
+    assignNeighbors(player_location->reference_cell);
 
-        all_vaos.push_back(cellToVAO(*new_cell));
-    }
+    int first_generation_size = neighbors.size();
+
+    //for (int i = 1; i < first_generation_size; i++) {
+        assignNeighbors(neighbors[1]);
+        assignNeighbors(neighbors[2]);
+        assignNeighbors(neighbors[3]);
+    //}
+    
+    return neighbors;
 };
+void PlayerContext::linkPlayerCellVAOs() {
+    std::vector<WorldCell*> neighborhood = establishNeighborhood();
 
+    std::size_t v_size = MAX_CELL_VERTS*3*sizeof(GLfloat);
+    std::size_t i_size = MAX_CELL_FACES*3*sizeof(GLuint);
+
+    GLfloat* v_buff = (GLfloat*) malloc(v_size);
+    GLuint* i_buff  = (GLuint*) malloc(i_size);
+
+    for (int i = 0; i < neighborhood.size(); i++) {
+        all_vaos.push_back(cellToVAO(*neighborhood[i], v_buff, i_buff, v_size, i_size));
+    }
+
+    free(v_buff);
+    free(i_buff);
+};    
 void PlayerContext::drawPlayerCellVAOs() {
     for (int i = 0; i < all_vaos.size(); i++){
-        all_vaos[i].DrawElements(GL_TRIANGLES, 12*9, GL_UNSIGNED_INT, 0);
+        all_vaos[i].DrawElements(GL_TRIANGLES);
     }
-};
-
-WorldMap::WorldMap() {
 };
 
 int idToIdx(std::array<int, 3> cell_id) {
@@ -56,20 +103,21 @@ int idToIdx(std::array<int, 3> cell_id) {
     }
     return index;
 };
+WorldMap::WorldMap() {
 
+};
 WorldCell* WorldMap::cellFromID(std::array<int, 3> cell_id) {
     int index = idToIdx(cell_id);
     return cell_grid[index];
 };
-
 void WorldMap::addCell(WorldCell& world_cell) {
     int index = idToIdx(world_cell.cell_id);
     cell_grid[index] = &world_cell;
 };
 
-
 PlayerLocation::PlayerLocation() {
-    floor_indx = getFloorIndex(); 
+    if (reference_cell == NULL) reference_cell = new WorldCell();
+    /* floor_indx = getFloorIndex(); 
         // Technically, you can choose any int 0-12
     const vec3* up          = &reference_cell->floor_norms[floor_indx];
     CellSide* floor_mesh    = &reference_cell->sides[floor_indx];
@@ -77,7 +125,7 @@ PlayerLocation::PlayerLocation() {
 
     feet = floor;
     head = floor + (*up)*height;
-    
+     */
     Model = translate(Model, -head);
         // update model matrix with the head
 };

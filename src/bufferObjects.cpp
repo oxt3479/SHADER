@@ -18,6 +18,7 @@ EBO::EBO(GLuint* indices, GLsizeiptr size) {
 	glGenBuffers(1, &ID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ID);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, GL_STATIC_DRAW);
+	to_draw = size/sizeof(GLuint);
 }
 void EBO::Bind()	{ glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ID); }
 void EBO::Update()  { glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, GL_STATIC_DRAW); }
@@ -100,6 +101,12 @@ void VAO::DrawElements(GLenum mode, GLsizei count, GLenum type, const void *indi
 	glDrawElements(mode, count, type, indices); 
     Unbind();
 }
+void VAO::DrawElements(GLenum mode) {
+	// If you are lazy you can use this? (ME)
+	Bind();
+	glDrawElements(mode, ebo.to_draw, GL_UNSIGNED_INT, 0); 
+    Unbind();
+}	
 void VAO::DrawArrays(GLenum mode, GLint first, GLsizei count) {
 	Bind();
     glDrawArrays(mode, first, count);
