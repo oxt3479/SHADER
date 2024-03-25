@@ -23,7 +23,7 @@ VAO cellToVAO(WorldCell& cell, GLfloat* cell_vert_buff, GLuint* cell_indx_buff,\
         (GLfloat*) &cell.cell_matrix, sizeof(glm::mat4),
         (GLuint*) cell_indx_buff, indxs_size
     );
-    
+
     cell_vao.LinkAttrib(cell_vao.vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
     cell_vao.LinkMat4(cell_vao.cbo, 1);
     return cell_vao;
@@ -31,44 +31,41 @@ VAO cellToVAO(WorldCell& cell, GLfloat* cell_vert_buff, GLuint* cell_indx_buff,\
 
 std::vector<WorldCell*> PlayerContext::establishNeighborhood() {    
     std::vector<WorldCell*> neighbors = {player_location->reference_cell};
-    std::array<int, 3> new_id;
-    int n;
+    int n, generation_size;
+    int max_adjacent = 5;
+    int max_attempts = 5;
+    int max_generations = 3;
+    int last_generation = 0;
+    WorldCell* new_cell;
 
+    auto notTooClose = [&](WorldCell* cell) {
+        for (WorldCell* other_cell : neighbors)
+            if (!cell->notTooClose(other_cell)) return false;
+        return true;
+    };
     auto assignNeighbors = [&](WorldCell* cell) {
-        for (int j = 0; j < 1; j++) { //rand()%12
-            n = rand()%12;
-            std::cout << "USING SIDE: " << n << std::endl;
-            // Check if this neighbor exists; if so don't make a new one.
-            new_id = cell->getNeighborID(n);
-            WorldCell* new_cell = world_map.cellFromID(new_id);
-            if (new_cell == NULL) {
-                new_cell = new WorldCell(new_id, cell, n);
-                //cell->getNeighborMat(n));
-                world_map.addCell(*new_cell);
-                std::cout << "NEW CELL : " <<
-                new_id[0] << "|" << new_id[1] << "|" << new_id[2]
-                << std::endl;
-            } else {
-                std::cout << "EXISTING CELL : " <<
-                new_id[0] << "|" << new_id[1] << "|" << new_id[2]
-                << std::endl;
+        for (int i = 0; i < rand()%max_adjacent; i++) {
+            for (int j = 0; j < max_attempts; j++) {
+                n = rand()%12;
+                if (!cell->checkForDoor(n)) continue;
+                    //^ Avoids unnecessary cell initialization...
+                new_cell = new WorldCell(cell, n);
+                if (notTooClose(new_cell)) {
+                    cell->addDoor(n, *new_cell);
+                    neighbors.push_back(new_cell);
+                    break;
+                } else {free(new_cell);}
             }
-            cell->addDoor(n, *new_cell);
-            // You technically could have a neighboor without a door...
-            neighbors.push_back(new_cell);
         }
     };
-    
-    assignNeighbors(player_location->reference_cell);
 
-    int first_generation_size = neighbors.size();
-
-    //for (int i = 1; i < first_generation_size; i++) {
-        assignNeighbors(neighbors[1]);
-        assignNeighbors(neighbors[2]);
-        assignNeighbors(neighbors[3]);
-    //}
-    
+    for (int i = 0; i < max_generations; i++) {
+        generation_size = neighbors.size();
+        for (int j = last_generation; j < generation_size; j++) {
+            assignNeighbors(neighbors[j]);
+        }
+        last_generation = generation_size;
+    }
     return neighbors;
 };
 void PlayerContext::linkPlayerCellVAOs() {
@@ -93,31 +90,9 @@ void PlayerContext::drawPlayerCellVAOs() {
     }
 };
 
-int idToIdx(std::array<int, 3> cell_id) {
-    int x = MAX_WORLD_SIZE/2 + cell_id[0];
-    int y = MAX_WORLD_SIZE/2 + cell_id[1];
-    int z = MAX_WORLD_SIZE/2 + cell_id[2];
-    int index = x*MAX_WORLD_SIZE*MAX_WORLD_SIZE + y*MAX_WORLD_SIZE + z;
-    if (index >= MAX_WORLD_SIZE*MAX_WORLD_SIZE*MAX_WORLD_SIZE) {
-        throw std::runtime_error("Index outside of world limits");
-    }
-    return index;
-};
-WorldMap::WorldMap() {
-
-};
-WorldCell* WorldMap::cellFromID(std::array<int, 3> cell_id) {
-    int index = idToIdx(cell_id);
-    return cell_grid[index];
-};
-void WorldMap::addCell(WorldCell& world_cell) {
-    int index = idToIdx(world_cell.cell_id);
-    cell_grid[index] = &world_cell;
-};
-
 PlayerLocation::PlayerLocation() {
     if (reference_cell == NULL) reference_cell = new WorldCell();
-    /* floor_indx = getFloorIndex(); 
+    floor_indx = getFloorIndex(); 
         // Technically, you can choose any int 0-12
     const vec3* up          = &reference_cell->floor_norms[floor_indx];
     CellSide* floor_mesh    = &reference_cell->sides[floor_indx];
@@ -125,7 +100,7 @@ PlayerLocation::PlayerLocation() {
 
     feet = floor;
     head = floor + (*up)*height;
-     */
+
     Model = translate(Model, -head);
         // update model matrix with the head
 };
@@ -147,9 +122,9 @@ mat4 PlayerLocation::getModel(std::array<bool, 4> WASD) {
     return Model;
 };
 uint PlayerLocation::getFloorIndex() {
-    /*Using the players feet this gives the closest aligned
-    surface normal in the dodecahedron defining the cell
-    feet is the displacement from the head*/
+    //Using the players feet this gives the closest aligned
+    //surface normal in the dodecahedron defining the cell
+    //feet is the displacement from the head
     float min = 0.0;
     int min_idx = 0;
     for (unsigned i; i < 12; i++) {
@@ -162,8 +137,8 @@ uint PlayerLocation::getFloorIndex() {
     return min_idx;
 };
 void PlayerLocation::updateFocus(float x, float y) {
-    /*For now this is 'normalized', but hypothetically,
-    focus could permit DOF changes...*/
+    //For now this is 'normalized', but hypothetically,
+    //focus could permit DOF changes...
     vec3 vertical   = normalize(feet);
     vec3 horizontal = normalize(cross(vertical, focus));
     
@@ -175,6 +150,6 @@ void PlayerLocation::updateFocus(float x, float y) {
     mx = x;
     my = y;
 };
-/*TODO: Use more modern "track ball" approach? 
-(Current implementation behaves weird lookging up or down too far)
-https://github.com/RockefellerA/Trackball/blob/master/Trackball.cpp*/
+//TODO: Use more modern "track ball" approach? 
+//(Current implementation behaves weird lookging up or down too far)
+//https://github.com/RockefellerA/Trackball/blob/master/Trackball.cpp
