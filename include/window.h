@@ -20,7 +20,13 @@ struct Uniforms
 };
 Uniforms* getUniforms(GLFWwindow* window);
 
-glm::mat4 getCamera(GLFWwindow* window);
+struct CameraMats
+{
+    glm::mat4 Projection;
+    glm::mat4 View;
+    glm::mat4 Model;
+};
+CameraMats getCameraMats(GLFWwindow* window);
 
 GLFWwindow* initializeWindow(unsigned int start_width, unsigned int start_height,\
     const char* title);

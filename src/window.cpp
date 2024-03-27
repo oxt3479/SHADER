@@ -1,6 +1,6 @@
 #include "window.h"
 
-bool window_is_focused = true;
+bool window_is_focused = false;
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     Uniforms* uniforms = getUniforms(window);
@@ -76,8 +76,8 @@ GLFWwindow* initializeWindow(unsigned int start_width, unsigned int start_height
     uniforms->windWidth = start_width;
     uniforms->windHeight = start_height;
     glfwSetWindowUserPointer(window, uniforms);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
+    if (window_is_focused)
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     return window;
 }
 
@@ -90,17 +90,18 @@ std::array<bool, 4> Uniforms::getWASD() {
             key_states[GLFW_KEY_S], key_states[GLFW_KEY_D]};
 }
 
-glm::mat4 getCamera(GLFWwindow* window) {
+CameraMats getCameraMats(GLFWwindow* window) {
     Uniforms* uniforms = getUniforms(window);
     //PlayerLocation* player_location = uniforms->player_context->player_location;
     PlayerLocation* player_location = uniforms->player_context->player_location;
     float ratio = float(uniforms->windWidth)/float(uniforms->windHeight);
     
+    CameraMats camera_mats;
     // Projection matrix: 90° Field of View, display range: 0.1 unit <-> 100 units
-    glm::mat4 Projection    = glm::perspective(glm::radians(89.0f), ratio, 0.1f, 10.0f);
-    glm::mat4 View          = player_location->getView( uniforms->mouseX/float(uniforms->windWidth),
+    camera_mats.Projection  = glm::perspective(glm::radians(89.0f), ratio, 0.1f, 10.0f);
+    camera_mats.View        = player_location->getView( uniforms->mouseX/float(uniforms->windWidth),
                                                         uniforms->mouseY/float(uniforms->windHeight));
-    glm::mat4 Model         = player_location->getModel( uniforms->getWASD() );
-    glm::mat4 mvp           = Projection * View * Model;
-    return mvp;
+    camera_mats.Model       = player_location->getModel( uniforms->getWASD() );
+    
+    return camera_mats;
 }
