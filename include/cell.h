@@ -14,11 +14,18 @@
 #include <glm/vec4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+const float OPOOP = 1.0f+(1.0f/PHI); // One plue one over phi.. what did you think I wrote?
+const float OPSPOOP = (1.0f/(PHI*PHI))+(1.0f/PHI); // Okay this one might even be funnier...
+const float OMOOPS = 1.0f-(1.0f/(PHI*PHI));
+const float NORMAL_SCALE = 2.0f*OPOOP*OPOOP/sqrt(OPOOP*OPOOP+OPSPOOP*OPSPOOP);
+const float DIAGONAL_SCALE = 2.0f*sqrt(OPOOP*OPOOP+OMOOPS*OMOOPS);
+const float TWELTH_CORNER_COS = NORMAL_SCALE/DIAGONAL_SCALE;
+
 struct CellSide {
     GLfloat* vertices;
     GLuint* indices;
     int num_faces;
-    glm::vec3 findIntercept(glm::vec3 v);
+    glm::vec3 findIntercept(glm::vec3 o, glm::vec3 v);
 };
 
 struct WorldCell {
@@ -73,8 +80,7 @@ struct WorldCell {
     glm::mat4 cell_matrix = glm::mat4(1.0);
     glm::mat4 reflection_mat = glm::mat4(1.0);
     glm::vec3 origin = glm::vec3(0.);
-private:
-    WorldCell* doors[12] = {NULL};
+    WorldCell* doors[12] = {NULL};    
 };
 
 #endif

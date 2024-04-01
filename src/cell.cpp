@@ -17,9 +17,6 @@ void buildSides(WorldCell* world_cell) {
         cell_indxs_ptr+=9;
     }
 }
-const float OPOOP = 1.0f+(1.0f/PHI); // One plue one over phi.. what did you think I wrote?
-const float OPSPOOP = (1.0f/(PHI*PHI))+(1.0f/PHI); // Okay this one might even be funnier...
-const float NORMAL_SCALE = 2.0f*OPOOP*OPOOP/sqrt(OPOOP*OPOOP+OPSPOOP*OPSPOOP);
 vec3 getNeighborOffset(vec3 n) {
     //This mess makes n, already normal to the surface, also
     //touch the center of the face, from `this` origin to
@@ -91,12 +88,9 @@ bool WorldCell::notTooClose(WorldCell* other_cell) {
     // This will unlikely occur without irresponsibly high VAO preloading...
 }
 
-bool checkTriangle(vec3 v, vec3 p1, vec3 p2, vec3 p3,
+bool checkTriangle(vec3 o, vec3 v, vec3 p1, vec3 p2, vec3 p3,
                     float& a, float& b, float& c) {
-    /*Assumes ray is coming from the origin. 
-    Which it is for the head of the player... if your using it right
-    https://gamedev.stackexchange.com/questions/114955/m%C3%B6ller-trumbore-intersection-point*/
-    
+    //https://gamedev.stackexchange.com/questions/114955/m%C3%B6ller-trumbore-intersection-point
     const float EPSILON = 0.0000001f;
     vec3 e1 = p2 - p1;
     vec3 e2 = p3 - p1;
@@ -107,11 +101,11 @@ bool checkTriangle(vec3 v, vec3 p1, vec3 p2, vec3 p3,
     if (det < EPSILON && det > -EPSILON) return false;
 
     float idet = 1.0f/det;
-    //vec3 tvec = origin-p1; //origin is 0 here... just fyi..
-    b = dot(-p1, vce2) * idet;
+    vec3 tvec = o-p1;
+    b = dot(tvec, vce2) * idet;
     if (b < 0 || b > 1) return false;
 
-    vec3 qvec = cross(-p1, e1);
+    vec3 qvec = cross(tvec, e1);
     c = dot(v, qvec) * idet;
     if (c < 0 || b+c > 1) return false;
 
@@ -119,7 +113,7 @@ bool checkTriangle(vec3 v, vec3 p1, vec3 p2, vec3 p3,
     return true;
     
 };
-vec3 CellSide::findIntercept(vec3 v) {
+vec3 CellSide::findIntercept(vec3 o, vec3 v) {
     /* TODO:  This could be done on the GPU w CUDA or datashaders...*/
     float a,b,c;
     uint inda,indb,indc;
@@ -133,10 +127,10 @@ vec3 CellSide::findIntercept(vec3 v) {
         p1 = vec3(vertices[inda*3], vertices[inda*3+1], vertices[inda*3+2]);
         p2 = vec3(vertices[indb*3], vertices[indb*3+1], vertices[indb*3+2]);
         p3 = vec3(vertices[indc*3], vertices[indc*3+1], vertices[indc*3+2]);
-        if ( checkTriangle(v, p1, p2, p3, a,b,c) ) {
+        if ( checkTriangle(o, v, p1, p2, p3, a,b,c) ) {
             return v*a;
         }
     }
-    throw std::runtime_error("ERROR : no intersection found.");
+    //throw std::runtime_error("ERROR : no intersection found.");
     return v;
 };
