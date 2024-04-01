@@ -94,32 +94,60 @@ PlayerLocation::PlayerLocation() {
     if (reference_cell == NULL) reference_cell = new WorldCell();
     floor_indx = getFloorIndex(); 
         // Technically, you can choose any int 0-12
-    const vec3* up          = &reference_cell->floor_norms[floor_indx];
+    player_up               = reference_cell->floor_norms[floor_indx];
     CellSide* floor_mesh    = &reference_cell->sides[floor_indx];
-    vec3 floor              = floor_mesh->findIntercept(-*up);
+    vec3 floor              = floor_mesh->findIntercept(vec3(0.),-player_up);
 
-    feet = floor;
-    head = floor + (*up)*height;
-
-    Model = translate(Model, -head);
-        // update model matrix with the head
+    head = floor + player_up*height;
 };
 mat4 PlayerLocation::getView(float x, float y) {
     updateFocus(x, y); // Account for mouse movement...
     mat4 View = lookAt(
-        vec3(0), focus, -feet
+        vec3(0), focus, player_up
     );// since this is view, keep the origin at 0, and not head...
     return View;
 };
+void PlayerLocation::accountBoundary() {
+    int adjacent_indx;
+    float min_dist = INFINITY;
+    float cur_dist;
+    WorldCell* best_cell;
+    for (int i = 0; i < 5; i++) {
+        adjacent_indx = dodecahedron.adjacency_matrix[floor_indx*5 + i];
+        if (reference_cell->doors[adjacent_indx] != NULL) {
+            cur_dist = length(head - reference_cell->doors[adjacent_indx]->origin);
+            if (cur_dist < min_dist) {
+                min_dist = cur_dist;
+                best_cell = reference_cell->doors[adjacent_indx];
+            }            
+        }
+    }
+    if (min_dist != INFINITY) {
+        cur_dist = length(head - reference_cell->origin);
+        if (min_dist < cur_dist) {
+            reference_cell = best_cell;
+            player_up = reference_cell->floor_norms[floor_indx];
+        }
+    }
+};
 mat4 PlayerLocation::getModel(std::array<bool, 4> WASD) {
-    vec3 left_right = normalize(cross(focus, feet));
-    vec3 front_back = normalize(cross(left_right, feet));
-    if (WASD[0]) Model = translate(Model, front_back*movement_scale);
-    if (WASD[1]) Model = translate(Model, -left_right*movement_scale);
-    if (WASD[2]) Model = translate(Model, -front_back*movement_scale);
-    if (WASD[3]) Model = translate(Model, left_right*movement_scale);
+    accountBoundary(); // ensure we are using the right `player_up`
+    vec3 left_right = normalize(cross(focus, -player_up));
+    vec3 front_back = normalize(cross(left_right, -player_up));
+    vec3 direction = vec3(0., 0., 0.);
+    if (WASD[0]) direction += front_back; //already normalized
+    if (WASD[1]) direction -= left_right; normalize(direction);
+    if (WASD[2]) direction -= front_back; normalize(direction);
+    if (WASD[3]) direction += left_right; normalize(direction);
+    direction *= movement_scale;
+    head -= direction;
 
-    return Model;
+    return mat4(
+        vec4(1.0f, 0.0f, 0.0f, 0.0f),
+        vec4(0.0f, 1.0f, 0.0f, 0.0f),
+        vec4(0.0f, 0.0f, 1.0f, 0.0f),
+        vec4(-head.x, -head.y, -head.z, 1.0f)
+    );
 };
 uint PlayerLocation::getFloorIndex() {
     //Using the players feet this gives the closest aligned
@@ -128,7 +156,7 @@ uint PlayerLocation::getFloorIndex() {
     float min = 0.0;
     int min_idx = 0;
     for (unsigned i; i < 12; i++) {
-        float product = dot(reference_cell->floor_norms[i], -feet);
+        float product = dot(reference_cell->floor_norms[i], -player_up);
         if (product < min) {
             min = product;
             min_idx = i;
@@ -139,7 +167,7 @@ uint PlayerLocation::getFloorIndex() {
 void PlayerLocation::updateFocus(float x, float y) {
     //For now this is 'normalized', but hypothetically,
     //focus could permit DOF changes...
-    vec3 vertical   = normalize(feet);
+    vec3 vertical   = normalize(-player_up);
     vec3 horizontal = normalize(cross(vertical, focus));
     
     float dx = (x-mx < 0.1) ? x-mx : 0.1;

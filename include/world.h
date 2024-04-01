@@ -5,8 +5,6 @@
 #include "bufferObjects.h"
 #include <vector>
 
-#define MAX_WORLD_SIZE 32
-
 
 struct PlayerLocation {    
     PlayerLocation();
@@ -18,18 +16,17 @@ private:
     float mx = 0.0f;
     float my = 0.0f;
     float height = 0.333f;//... seems good to me
-    float movement_scale = 1.0f/1000.0f;
+    float movement_scale = 1.0f/5000.0f;
     uint floor_indx;
 
     glm::vec3 head = glm::vec3(0,0,0);
-    glm::vec3 feet = glm::vec3(0,0,-height); 
+    glm::vec3 player_up = glm::vec3(0,0,-1);
     glm::vec3 focus = glm::vec3(1,0,0);
         //NOTE: feet/focus are relative to the head!
         //i.e. the actuall coordinates of feet/focus:
         //head + feet / head + focus
-    glm::mat4 Model = glm::mat4(1.0f);
-
     uint getFloorIndex();
+    void accountBoundary();
     void updateFocus(float x, float y);
 };
 
