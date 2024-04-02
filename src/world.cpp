@@ -107,31 +107,41 @@ mat4 PlayerLocation::getView(float x, float y) {
     );// since this is view, keep the origin at 0, and not head...
     return View;
 };
-void PlayerLocation::accountBoundary() {
+bool PlayerLocation::accountBoundary(vec3 direction) {
+    // This method does two things:
+    // makes sure that `player_up` is right based on location
+    // returns false if the player is about to hit a wall.
+    const float SCALE_MULT = 1/7.0f;
+    const float min_dist = length(head - direction - reference_cell->origin);
+    
     int adjacent_indx;
-    float min_dist = INFINITY;
-    float cur_dist;
-    WorldCell* best_cell;
-    for (int i = 0; i < 5; i++) {
-        adjacent_indx = dodecahedron.adjacency_matrix[floor_indx*5 + i];
-        if (reference_cell->doors[adjacent_indx] != NULL) {
-            cur_dist = length(head - reference_cell->doors[adjacent_indx]->origin);
-            if (cur_dist < min_dist) {
-                min_dist = cur_dist;
-                best_cell = reference_cell->doors[adjacent_indx];
-            }            
+    float cur_dist, ref_weight;
+    vec3 hypothetical_origin, ref_up, door_up;
+    for (int i = 0; i < 5; i++) { // There are 5 adjacent sides...
+        adjacent_indx       = dodecahedron.adjacency_matrix[floor_indx*5 + i]; 
+            // Map from 1-5 to cell normal indeces
+        hypothetical_origin = reference_cell->origin-reference_cell->floor_norms[adjacent_indx]*NORMAL_SCALE;
+        cur_dist            = length(head - direction - hypothetical_origin);
+        if ((cur_dist - min_dist) <= NORMAL_SCALE*SCALE_MULT) {
+            // Within `SCALE_MULT`% of the edge, you begin to blend the normals together.
+            if (reference_cell->doors[adjacent_indx] != NULL) {
+                if (cur_dist < min_dist) {
+                    reference_cell = reference_cell->doors[adjacent_indx];
+                } // Swap the reference cell once you cross the boundary.
+                ref_up      = reference_cell->floor_norms[floor_indx];
+                door_up     = reference_cell->doors[adjacent_indx]->floor_norms[floor_indx];
+                ref_weight  = ((cur_dist-min_dist)/(NORMAL_SCALE*SCALE_MULT*2.0f)+0.5f);
+                player_up   = normalize(ref_up*ref_weight + door_up* (1.0f-ref_weight));
+                    // This above blends the two normals together based on proximity.
+                return true; 
+                    // There is a door here, the player can pass.
+            }
+            return false;
         }
     }
-    if (min_dist != INFINITY) {
-        cur_dist = length(head - reference_cell->origin);
-        if (min_dist < cur_dist) {
-            reference_cell = best_cell;
-            player_up = reference_cell->floor_norms[floor_indx];
-        }
-    }
+    return true;
 };
 mat4 PlayerLocation::getModel(std::array<bool, 4> WASD) {
-    accountBoundary(); // ensure we are using the right `player_up`
     vec3 left_right = normalize(cross(focus, -player_up));
     vec3 front_back = normalize(cross(left_right, -player_up));
     vec3 direction = vec3(0., 0., 0.);
@@ -140,8 +150,9 @@ mat4 PlayerLocation::getModel(std::array<bool, 4> WASD) {
     if (WASD[2]) direction -= front_back; normalize(direction);
     if (WASD[3]) direction += left_right; normalize(direction);
     direction *= movement_scale;
-    head -= direction;
-
+    if ( accountBoundary(direction) ) {
+        head -= direction;
+    }
     return mat4(
         vec4(1.0f, 0.0f, 0.0f, 0.0f),
         vec4(0.0f, 1.0f, 0.0f, 0.0f),

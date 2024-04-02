@@ -26,7 +26,7 @@ private:
         //i.e. the actuall coordinates of feet/focus:
         //head + feet / head + focus
     uint getFloorIndex();
-    void accountBoundary();
+    bool accountBoundary(glm::vec3 direction);
     void updateFocus(float x, float y);
 };
 
