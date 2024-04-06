@@ -107,7 +107,7 @@ mat4 PlayerLocation::getView(float x, float y) {
     );// since this is view, keep the origin at 0, and not head...
     return View;
 };
-bool PlayerLocation::accountBoundary(vec3 direction) {
+bool PlayerLocation::accountBoundary(vec3& direction) {
     // This method does two things:
     // makes sure that `player_up` is right based on location
     // returns false if the player is about to hit a wall.
