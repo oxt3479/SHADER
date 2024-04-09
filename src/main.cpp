@@ -8,8 +8,8 @@ int main() {
     GLFWwindow* window = initializeWindow(768, 768, "SHADER");
 
     ShaderProgram shader_prog(  SHADER_DIR "/stereographic.vert", \
-                                SHADER_DIR "/cube-fragment.glsl", false);
-
+                                SHADER_DIR "/textured.frag", false);
+    
     PlayerContext player_context;    
     player_context.linkPlayerCellVAOs();
     
@@ -22,6 +22,7 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         if (uniforms->loading) {
             shader_prog.Load();
+            shader_prog.addRGBTexture("textureA", TEXTURE_DIR "/tile_floor_a.png", 0);
             shader_prog.Activate();
 
             U_RESOLUTION  = glGetUniformLocation(shader_prog.ID, "u_resolution");

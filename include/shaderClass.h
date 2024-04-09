@@ -2,6 +2,7 @@
 #define SHADERCLASS_H
 
 #include <glad/glad.h>
+#include <stb/stb_image.h>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -20,6 +21,8 @@ public:
 	void Load();
 	void Activate();
 	void Delete();
+	void addRGBTexture( const char* samplerName, \
+						const char* imageFile, int texture_idx);
 
 private:
 	void checkCompileErrors(unsigned int shader, const char* type);

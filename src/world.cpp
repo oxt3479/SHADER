@@ -1,7 +1,10 @@
 #include "world.h"
 
-#define MAX_CELL_VERTS 20
+#define MAX_CELL_VERTS 60 
+    // 20 corners x3 redundancy for unique sides. 
+    // (3 meet per corner with 3 unique textures)
 #define MAX_CELL_FACES 12*3
+    // need 3 triangles for a single pentagon.
 
 using namespace glm;
 
@@ -24,8 +27,9 @@ VAO cellToVAO(WorldCell& cell, GLfloat* cell_vert_buff, GLuint* cell_indx_buff,\
         (GLuint*) cell_indx_buff, indxs_size
     );
 
-    cell_vao.LinkAttrib(cell_vao.vbo, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
-    cell_vao.LinkMat4(cell_vao.cbo, 1);
+    cell_vao.LinkAttrib(cell_vao.vbo, 0, 3, GL_FLOAT, 5 * sizeof(float), (void*)0);
+    cell_vao.LinkAttrib(cell_vao.vbo, 1, 2, GL_FLOAT, 5 * sizeof(float), (void*)(3*sizeof(float)));
+    cell_vao.LinkMat4(cell_vao.cbo, 2);
     return cell_vao;
 };
 
@@ -71,7 +75,7 @@ std::vector<WorldCell*> PlayerContext::establishNeighborhood() {
 void PlayerContext::linkPlayerCellVAOs() {
     std::vector<WorldCell*> neighborhood = establishNeighborhood();
 
-    std::size_t v_size = MAX_CELL_VERTS*3*sizeof(GLfloat);
+    std::size_t v_size = MAX_CELL_VERTS*5*sizeof(GLfloat);
     std::size_t i_size = MAX_CELL_FACES*3*sizeof(GLuint);
 
     GLfloat* v_buff = (GLfloat*) malloc(v_size);
@@ -92,11 +96,9 @@ void PlayerContext::drawPlayerCellVAOs() {
 
 PlayerLocation::PlayerLocation() {
     if (reference_cell == NULL) reference_cell = new WorldCell();
-    floor_indx = getFloorIndex(); 
-        // Technically, you can choose any int 0-12
-    player_up               = reference_cell->floor_norms[floor_indx];
-    CellSide* floor_mesh    = &reference_cell->sides[floor_indx];
-    vec3 floor              = floor_mesh->findIntercept(vec3(0.),-player_up);
+    floor_indx  = getFloorIndex(); 
+    player_up   = reference_cell->floor_norms[floor_indx];
+    vec3 floor  = reference_cell->sides[floor_indx].findIntercept(vec3(0.),-player_up);
 
     head = floor + player_up*height;
 };

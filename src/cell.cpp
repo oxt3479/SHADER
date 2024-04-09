@@ -9,9 +9,9 @@ void buildSides(WorldCell* world_cell) {
     //pentagon means +=9 
     //TODO: this may be rundnadant if ref_dodecahedron 
     //is always the same...
-    GLuint* cell_indxs_ptr = ref_dodecahedron.prim_cell_indxs;
+    GLuint* cell_indxs_ptr = ref_dodecahedron.textured_indxs;
     for (uint i=0; i < 12; i++) {
-        world_cell->sides[i].vertices = ref_dodecahedron.prim_cell_verts;
+        world_cell->sides[i].vertices = ref_dodecahedron.textured_verts;
         world_cell->sides[i].indices  = cell_indxs_ptr;
         world_cell->sides[i].num_faces = 3;
         cell_indxs_ptr+=9;
@@ -53,7 +53,7 @@ WorldCell::WorldCell(WorldCell* parent, int side_idx) {
     cell_matrix = translate(cell_matrix, origin)*reflection_mat;
 };
 std::size_t WorldCell::generateVerts(GLfloat* buffer, std::size_t max_size) {
-    std::memcpy(buffer, &ref_dodecahedron.prim_cell_verts, max_size);
+    std::memcpy(buffer, &ref_dodecahedron.textured_verts, max_size);
     return max_size;
 };
 std::size_t WorldCell::generateIndxs(GLuint* buffer, std::size_t max_size) {
@@ -124,13 +124,13 @@ vec3 CellSide::findIntercept(vec3 o, vec3 v) {
         inda = indices[i*3];
         indb = indices[i*3+1];
         indc = indices[i*3+2];
-        p1 = vec3(vertices[inda*3], vertices[inda*3+1], vertices[inda*3+2]);
-        p2 = vec3(vertices[indb*3], vertices[indb*3+1], vertices[indb*3+2]);
-        p3 = vec3(vertices[indc*3], vertices[indc*3+1], vertices[indc*3+2]);
+        p1 = vec3(vertices[inda*5], vertices[inda*5+1], vertices[inda*5+2]);
+        p2 = vec3(vertices[indb*5], vertices[indb*5+1], vertices[indb*5+2]);
+        p3 = vec3(vertices[indc*5], vertices[indc*5+1], vertices[indc*5+2]);
         if ( checkTriangle(o, v, p1, p2, p3, a,b,c) ) {
             return v*a;
         }
     }
-    //throw std::runtime_error("ERROR : no intersection found.");
+    throw std::runtime_error("ERROR : no intersection found.");
     return v;
 };
