@@ -11,7 +11,8 @@ include_directories("./include/")
 #file(GLOB SHADER_FILES "${CMAKE_SOURCE_DIR}/programs/*")
 #file(COPY ${SHADER_FILES} DESTINATION "${CMAKE_BINARY_DIR}/programs")
 
-set(SHADER_DIR "${CMAKE_SOURCE_DIR}/programs")
+set(SHADER_DIR "${CMAKE_SOURCE_DIR}/shaders")
+set(TEXTURE_DIR "${CMAKE_SOURCE_DIR}/textures")
 configure_file(config.h.in config.h)
 include_directories(${CMAKE_BINARY_DIR})
 
