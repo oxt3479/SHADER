@@ -2,6 +2,8 @@
 #include "shaderClass.h"
 
 std::string get_file_contents(const std::string& filename, const std::string& parentPath = "") {
+    // This function recursively builds the shader file accounting for include statements for
+    // other shader files.
     std::string filePath;
     if(parentPath.empty()) {
         filePath = filename;
@@ -69,26 +71,6 @@ void ShaderProgram::Load() {
 }
 void ShaderProgram::Activate() { glUseProgram(ID); }
 void ShaderProgram::Delete() { glDeleteProgram(ID); }
-void ShaderProgram::addRGBTexture(  const char* samplerName, \
-						            const char* imageFile, int texture_idx) {
-    int width, height, channels;
-    unsigned char* image_content = stbi_load(imageFile, &width, &height, &channels, STBI_rgb);
-        if (!image_content) { throw std::runtime_error("Missing texture");}
-    
-    GLuint textureID;
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_2D, textureID);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image_content);
-    
-    glActiveTexture(GL_TEXTURE0+texture_idx);    
-    glUniform1i(glGetUniformLocation(ID, samplerName), texture_idx);
-};
 void ShaderProgram::checkCompileErrors(unsigned int shader, const char* type) {
     GLint hasCompiled;
     char infoLog[1024];
@@ -106,4 +88,37 @@ void ShaderProgram::checkLinkingErrors(unsigned int program) {
         glGetProgramInfoLog(program, 1024, NULL, infoLog);
         std::cout << "SHADER_LINKING_ERROR for: PROGRAM\n" << infoLog << std::endl;
     }
+}
+
+void addTexture(    const char* samplerName, const char* imageFile, int texture_idx, \
+                    int stbiformat, GLint glformat, GLuint shaderID) {
+    // Function used for redundancy in alternative texture loading methods...
+    int width, height, channels;
+    unsigned char* image_content = stbi_load(imageFile, &width, &height, &channels, stbiformat);
+        if (!image_content) { throw std::runtime_error("Missing texture image file");}
+    
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+    glActiveTexture(GL_TEXTURE0+texture_idx);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    glTexImage2D(   GL_TEXTURE_2D, 0, glformat, width, height, 0, glformat, \
+                    GL_UNSIGNED_BYTE, image_content);
+
+    glUniform1i(glGetUniformLocation(shaderID, samplerName), texture_idx);
+
+    stbi_image_free(image_content);    
+}
+void ShaderProgram::addRGBTexture(  const char* samplerName, \
+						            const char* imageFile, int texture_idx) {
+    addTexture(samplerName, imageFile, texture_idx, STBI_rgb, GL_RGB, ID);
+}
+void ShaderProgram::addDepthTexture(const char* samplerName, \
+                                    const char* imageFile, int texture_idx) {
+    addTexture(samplerName, imageFile, texture_idx, STBI_grey, GL_RED, ID);
 }

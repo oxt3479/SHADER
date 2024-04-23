@@ -22,7 +22,8 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         if (uniforms->loading) {
             shader_prog.Load();
-            shader_prog.addRGBTexture("textureA", TEXTURE_DIR "/tile_floor_a.png", 0);
+            shader_prog.addRGBTexture("rgbTexture", TEXTURE_DIR "/tile_floor_b.png", 0);
+            shader_prog.addDepthTexture("depthTexture", TEXTURE_DIR "/tile_floor_b_disp.png", 1);            
             shader_prog.Activate();
 
             U_RESOLUTION  = glGetUniformLocation(shader_prog.ID, "u_resolution");

@@ -23,6 +23,8 @@ public:
 	void Delete();
 	void addRGBTexture( const char* samplerName, \
 						const char* imageFile, int texture_idx);
+	void addDepthTexture( const char* samplerName, \
+						const char* imageFile, int texture_idx);
 
 private:
 	void checkCompileErrors(unsigned int shader, const char* type);
