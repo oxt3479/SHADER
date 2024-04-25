@@ -67,7 +67,6 @@ void ShaderProgram::Load() {
 
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
-	/* Now in the program the original shaders are unneeded*/    
 }
 void ShaderProgram::Activate() { glUseProgram(ID); }
 void ShaderProgram::Delete() { glDeleteProgram(ID); }
@@ -90,11 +89,9 @@ void ShaderProgram::checkLinkingErrors(unsigned int program) {
     }
 }
 
-void addTexture(    const char* samplerName, const char* imageFile, int texture_idx, \
-                    int stbiformat, GLint glformat, GLuint shaderID) {
-    // Function used for redundancy in alternative texture loading methods...
+void addUniformRGBATexture(GLuint shaderID, const char* samplerName, const char* imageFile, int texture_idx) {
     int width, height, channels;
-    unsigned char* image_content = stbi_load(imageFile, &width, &height, &channels, stbiformat);
+    unsigned char* image_content = stbi_load(imageFile, &width, &height, &channels, STBI_rgb_alpha);
         if (!image_content) { throw std::runtime_error("Missing texture image file");}
     
     GLuint textureID;
@@ -102,23 +99,16 @@ void addTexture(    const char* samplerName, const char* imageFile, int texture_
     glActiveTexture(GL_TEXTURE0+texture_idx);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
+    glTexImage2D(   GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, \
+                    GL_UNSIGNED_BYTE, image_content);
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    
-    glTexImage2D(   GL_TEXTURE_2D, 0, glformat, width, height, 0, glformat, \
-                    GL_UNSIGNED_BYTE, image_content);
 
-    glUniform1i(glGetUniformLocation(shaderID, samplerName), texture_idx);
+    GLuint location = glGetUniformLocation(shaderID, samplerName);
+    glUniform1i(location, texture_idx);
 
     stbi_image_free(image_content);    
-}
-void ShaderProgram::addRGBTexture(  const char* samplerName, \
-						            const char* imageFile, int texture_idx) {
-    addTexture(samplerName, imageFile, texture_idx, STBI_rgb, GL_RGB, ID);
-}
-void ShaderProgram::addDepthTexture(const char* samplerName, \
-                                    const char* imageFile, int texture_idx) {
-    addTexture(samplerName, imageFile, texture_idx, STBI_grey, GL_RED, ID);
 }

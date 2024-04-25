@@ -7,7 +7,7 @@
 int main() {
     GLFWwindow* window = initializeWindow(768, 768, "SHADER");
 
-    ShaderProgram shader_prog(  SHADER_DIR "/stereographic.vert", \
+    ShaderProgram shader_prog(  SHADER_DIR "/displacement.vert", \
                                 SHADER_DIR "/textured.frag", false);
     
     PlayerContext player_context;    
@@ -15,15 +15,13 @@ int main() {
     
     Uniforms* uniforms  = getUniforms(window);
     
-    float time;    
-    GLuint U_RESOLUTION, U_MOUSE, U_SCROLL, U_TIME, U_CAMERA, U_WORLD;
+    float time;
+    GLint U_RESOLUTION, U_MOUSE, U_SCROLL, U_TIME, U_CAMERA, U_WORLD;
     CameraMats mats;
 
     while (!glfwWindowShouldClose(window)) {
         if (uniforms->loading) {
             shader_prog.Load();
-            shader_prog.addRGBTexture("rgbTexture", TEXTURE_DIR "/tile_floor_b.png", 0);
-            shader_prog.addDepthTexture("depthTexture", TEXTURE_DIR "/tile_floor_b_disp.png", 1);            
             shader_prog.Activate();
 
             U_RESOLUTION  = glGetUniformLocation(shader_prog.ID, "u_resolution");
@@ -32,9 +30,17 @@ int main() {
             U_TIME        = glGetUniformLocation(shader_prog.ID, "u_time");
             U_CAMERA      = glGetUniformLocation(shader_prog.ID, "CAMERA");
             U_WORLD       = glGetUniformLocation(shader_prog.ID, "WORLD");
-    
+
+            addUniformRGBATexture(shader_prog.ID, "rgbTexture", \
+                TEXTURE_DIR "/tile_floor_a.png", 0);
+            addUniformRGBATexture(shader_prog.ID, "depthTexture", \
+                TEXTURE_DIR "/disp_test.png", 1);
+
             uniforms->loading = false;
             uniforms->player_context = &player_context;
+            
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_LESS);
         }
 
         glClearColor(0.f, 0.f, 0.f, 1.0f);
@@ -53,9 +59,6 @@ int main() {
         glUniformMatrix4fv(U_WORLD, 1, GL_FALSE, \
             &mats.Model[0][0]);
         
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
-
         player_context.drawPlayerCellVAOs();
 
         glfwSwapBuffers(window);

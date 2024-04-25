@@ -1,4 +1,5 @@
 #include "window.h"
+#include "debug.h"
 
 bool window_is_focused = false;
 
@@ -78,6 +79,8 @@ GLFWwindow* initializeWindow(unsigned int start_width, unsigned int start_height
     glfwSetWindowUserPointer(window, uniforms);
     if (window_is_focused)
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    printGPUCapabilities();
     return window;
 }
 

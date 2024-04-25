@@ -10,6 +10,7 @@
 #include <cerrno>
 
 std::string get_file_contents(const std::string& filename, const std::string& parentPath);
+void addUniformRGBATexture(GLuint shaderID, const char* samplerName, const char* imageFile, int texture_idx);
 
 class ShaderProgram {
 public:
@@ -21,10 +22,6 @@ public:
 	void Load();
 	void Activate();
 	void Delete();
-	void addRGBTexture( const char* samplerName, \
-						const char* imageFile, int texture_idx);
-	void addDepthTexture( const char* samplerName, \
-						const char* imageFile, int texture_idx);
 
 private:
 	void checkCompileErrors(unsigned int shader, const char* type);
