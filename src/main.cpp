@@ -36,24 +36,29 @@ int main() {
             addUniformRGBATexture(shader_prog.ID, "depthTexture", \
                 TEXTURE_DIR "/disp_test.png", 1);
 
+            time = glfwGetTime();
+            uniforms->last_time = time;
             uniforms->loading = false;
             uniforms->player_context = &player_context;
             
             glEnable(GL_DEPTH_TEST);
             glDepthFunc(GL_LESS);
         }
+        time = glfwGetTime();
+        uniforms->this_time = time;
 
         glClearColor(0.f, 0.f, 0.f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        time = glfwGetTime();
-        mats = getCameraMats(window);
-
-        glUniform2f(U_RESOLUTION, uniforms->windWidth, uniforms->windHeight);
-        glUniform2f(U_MOUSE, uniforms->mouseX, uniforms->mouseY);        
-        glUniform1f(U_SCROLL, uniforms->scroll);        
+        glUniform2f(U_RESOLUTION,   uniforms->windWidth, \
+                                    uniforms->windHeight);
+        glUniform2f(U_MOUSE,        uniforms->mouseX, \
+                                    uniforms->mouseY);
+        glUniform1f(U_SCROLL,       uniforms->scroll);
         glUniform1f(U_TIME, time);
         
+        mats = getCameraMats(window);
+
         glUniformMatrix4fv(U_CAMERA, 1, GL_FALSE, \
             &(mats.Projection*mats.View)[0][0]);
         glUniformMatrix4fv(U_WORLD, 1, GL_FALSE, \
@@ -63,6 +68,7 @@ int main() {
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+        uniforms->last_time = time;
     }
     return 0;
 }

@@ -17,6 +17,8 @@ struct Uniforms
     PlayerContext* player_context;
     bool key_states[1024] = {false};
     std::array<bool, 4> getWASD();
+    float last_time = 0.0f;
+    float this_time = 0.0f;
 };
 Uniforms* getUniforms(GLFWwindow* window);
 

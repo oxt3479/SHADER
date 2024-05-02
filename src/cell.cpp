@@ -1,5 +1,4 @@
 #include "cell.h"
-#include <glm/gtx/string_cast.hpp>
 using namespace glm;
 
 Dodecahedron ref_dodecahedron;
@@ -61,7 +60,7 @@ std::size_t WorldCell::generateIndxs(GLuint* buffer, std::size_t max_size) {
     std::size_t next_size;
     std::size_t total_size = 0;
     for (int i = 0; i < 12; i++) {
-        if (doors[i] == NULL) {
+        if ( (doors[i] == NULL) || (doors[i] == this) ){ // If the pointer is itself, we render.
             next_size = sides[i].num_faces*3*sizeof(GLuint);
             if (total_size+next_size > max_size) {
                 throw std::runtime_error("Not enough space, increase MAX_CELL_SIDES");
