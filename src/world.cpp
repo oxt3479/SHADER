@@ -102,8 +102,8 @@ PlayerLocation::PlayerLocation() {
 
     head = floor + player_up*height;
 };
-mat4 PlayerLocation::getView(float x, float y) {
-    updateFocus(x, y); // Account for mouse movement...
+mat4 PlayerLocation::getView(float x, float y, float dt) {
+    updateFocus(x, y, dt); // Account for mouse movement...
     mat4 View = lookAt(
         vec3(0), focus, player_up
     );// since this is view, keep the origin at 0, and not head...
@@ -126,10 +126,16 @@ bool PlayerLocation::accountBoundary(vec3& direction) {
         cur_dist            = length(head - direction - hypothetical_origin);
         if ((cur_dist - min_dist) <= NORMAL_SCALE*SCALE_MULT) {
             // Within `SCALE_MULT`% of the edge, you begin to blend the normals together.
-            if (reference_cell->doors[adjacent_indx] != NULL) {
-                if (cur_dist < min_dist) {
+            if (reference_cell->doors[adjacent_indx] != NULL) { // Checking : is there a cell through this wall?
+                if (cur_dist < min_dist) { 
+                    // This is where we cross the cell boundary..
+                    if (reference_cell->doors[adjacent_indx]->doors[floor_indx] != NULL) {
+                        // There is no floor on the other side, so we stop at this point.
+                        return false;
+                    }
                     reference_cell = reference_cell->doors[adjacent_indx];
-                } // Swap the reference cell once you cross the boundary.
+                    // Otherwise, swap the reference cell once you cross the boundary.
+                } 
                 ref_up      = reference_cell->floor_norms[floor_indx];
                 door_up     = reference_cell->doors[adjacent_indx]->floor_norms[floor_indx];
                 ref_weight  = ((cur_dist-min_dist)/(NORMAL_SCALE*SCALE_MULT*2.0f)+0.5f);
@@ -143,7 +149,7 @@ bool PlayerLocation::accountBoundary(vec3& direction) {
     }
     return true;
 };
-mat4 PlayerLocation::getModel(std::array<bool, 4> WASD) {
+mat4 PlayerLocation::getModel(std::array<bool, 4> WASD, float dt) {
     vec3 left_right = normalize(cross(focus, -player_up));
     vec3 front_back = normalize(cross(left_right, -player_up));
     vec3 direction = vec3(0., 0., 0.);
@@ -151,7 +157,7 @@ mat4 PlayerLocation::getModel(std::array<bool, 4> WASD) {
     if (WASD[1]) direction -= left_right; normalize(direction);
     if (WASD[2]) direction -= front_back; normalize(direction);
     if (WASD[3]) direction += left_right; normalize(direction);
-    direction *= movement_scale;
+    direction *= movement_scale*dt;
     if ( accountBoundary(direction) ) {
         head -= direction;
     }
@@ -175,9 +181,12 @@ uint PlayerLocation::getFloorIndex() {
             min_idx = i;
         }
     }
+    reference_cell->doors[min_idx] = reference_cell; 
+        // Prevent the floor from becoming a door.
+        // NOTE: this does NOT create an infinte looping paradox <3
     return min_idx;
 };
-void PlayerLocation::updateFocus(float x, float y) {
+void PlayerLocation::updateFocus(float x, float y, float dt) {
     //For now this is 'normalized', but hypothetically,
     //focus could permit DOF changes...
     vec3 vertical   = normalize(-player_up);
@@ -186,7 +195,7 @@ void PlayerLocation::updateFocus(float x, float y) {
     float dx = (x-mx < 0.1) ? x-mx : 0.1;
     float dy = (y-my < 0.1) ? y-my : 0.1;
 
-    focus = normalize(normalize(focus) + (dx*horizontal) + (dy*vertical));
+    focus = normalize(normalize(focus) + (dx*horizontal*mouse_scale*dt) + (dy*vertical*mouse_scale*dt));
 
     mx = x;
     my = y;

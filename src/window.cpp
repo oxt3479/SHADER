@@ -62,6 +62,12 @@ GLFWwindow* initializeWindow(unsigned int start_width, unsigned int start_height
     glfwMakeContextCurrent(window);
 	gladLoadGL();
 	glViewport(0, 0, start_width, start_height);
+    
+    int system_width, system_height;
+    glfwGetFramebufferSize(window, &system_width,
+                                   &system_height);
+    glViewport(0, 0, system_width, system_height);
+    // Resize necessary on OSX, due to scaling nonsense...
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cout << "Failed to initialize GLAD" << std::endl;
@@ -98,13 +104,14 @@ CameraMats getCameraMats(GLFWwindow* window) {
     //PlayerLocation* player_location = uniforms->player_context->player_location;
     PlayerLocation* player_location = uniforms->player_context->player_location;
     float ratio = float(uniforms->windWidth)/float(uniforms->windHeight);
+    float dt = float(uniforms->this_time-uniforms->last_time);
     
     CameraMats camera_mats;
     // Projection matrix: 90° Field of View, display range: 0.1 unit <-> 100 units
     camera_mats.Projection  = glm::perspective(glm::radians(89.0f), ratio, 0.1f, 10.0f);
     camera_mats.View        = player_location->getView( uniforms->mouseX/float(uniforms->windWidth),
-                                                        uniforms->mouseY/float(uniforms->windHeight));
-    camera_mats.Model       = player_location->getModel( uniforms->getWASD() );
+                                                        uniforms->mouseY/float(uniforms->windHeight), dt);
+    camera_mats.Model       = player_location->getModel( uniforms->getWASD(), dt);
     
     return camera_mats;
 }
