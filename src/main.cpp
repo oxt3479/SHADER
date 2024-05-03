@@ -57,7 +57,7 @@ int main() {
         glUniform1f(U_SCROLL,       uniforms->scroll);
         glUniform1f(U_TIME, time);
         
-        mats = getCameraMats(window);
+        getCameraMats(window, mats);
 
         glUniformMatrix4fv(U_CAMERA, 1, GL_FALSE, \
             &(mats.Projection*mats.View)[0][0]);

@@ -72,11 +72,16 @@ std::size_t WorldCell::generateIndxs(GLuint* buffer, std::size_t max_size) {
     }
     return total_size;
 };
-bool WorldCell::checkForDoor(int side_idx) {
+bool WorldCell::canAddDoor(int side_idx) {
     return doors[side_idx] == NULL;
 };
+bool WorldCell::hasDoor(int side_idx) {
+    // NOTE: this is not the exact opposite of canAddDoor()!
+    // If the doors array points to `this`, it is not a door!
+    return ( !canAddDoor(side_idx) ) && ( doors[side_idx] != this );
+};
 void WorldCell::addDoor(int door_idx, WorldCell& destination) {
-    // Does not check if door exists, first use checkForDoor()!
+    // Does not check if door exists, first use canAddDoor()!
     doors[door_idx] = &destination;
     destination.doors[door_idx] = this;
 };
