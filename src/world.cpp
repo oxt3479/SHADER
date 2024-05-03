@@ -51,7 +51,7 @@ std::vector<WorldCell*> PlayerContext::establishNeighborhood() {
         for (int i = 0; i < rand()%max_adjacent; i++) {
             for (int j = 0; j < max_attempts; j++) {
                 n = rand()%12;
-                if (!cell->checkForDoor(n)) continue;
+                if (!cell->canAddDoor(n)) continue;
                     //^ Avoids unnecessary cell initialization...
                 new_cell = new WorldCell(cell, n);
                 if (notTooClose(new_cell)) {
@@ -129,8 +129,8 @@ bool PlayerLocation::accountBoundary(vec3& direction) {
             if (reference_cell->doors[adjacent_indx] != NULL) { // Checking : is there a cell through this wall?
                 if (cur_dist < min_dist) { 
                     // This is where we cross the cell boundary..
-                    if (reference_cell->doors[adjacent_indx]->doors[floor_indx] != NULL) {
-                        // There is no floor on the other side, so we stop at this point.
+                    if (reference_cell->doors[adjacent_indx]->hasDoor(floor_indx)) {
+                        // If there is a door in the floor, don't walk on it!
                         return false;
                     }
                     reference_cell = reference_cell->doors[adjacent_indx];

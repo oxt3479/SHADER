@@ -99,14 +99,13 @@ std::array<bool, 4> Uniforms::getWASD() {
             key_states[GLFW_KEY_S], key_states[GLFW_KEY_D]};
 }
 
-CameraMats getCameraMats(GLFWwindow* window) {
+CameraMats getCameraMats(GLFWwindow* window, CameraMats &camera_mats) {
     Uniforms* uniforms = getUniforms(window);
     //PlayerLocation* player_location = uniforms->player_context->player_location;
     PlayerLocation* player_location = uniforms->player_context->player_location;
     float ratio = float(uniforms->windWidth)/float(uniforms->windHeight);
-    float dt = float(uniforms->this_time-uniforms->last_time);
+    float dt = std::min( float(uniforms->this_time-uniforms->last_time), 0.002f);
     
-    CameraMats camera_mats;
     // Projection matrix: 90° Field of View, display range: 0.1 unit <-> 100 units
     camera_mats.Projection  = glm::perspective(glm::radians(89.0f), ratio, 0.1f, 10.0f);
     camera_mats.View        = player_location->getView( uniforms->mouseX/float(uniforms->windWidth),

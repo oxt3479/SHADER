@@ -28,7 +28,7 @@ struct CameraMats
     glm::mat4 View;
     glm::mat4 Model;
 };
-CameraMats getCameraMats(GLFWwindow* window);
+CameraMats getCameraMats(GLFWwindow* window, CameraMats& camera_mats);
 
 GLFWwindow* initializeWindow(unsigned int start_width, unsigned int start_height,\
     const char* title);

@@ -35,7 +35,8 @@ struct WorldCell {
     WorldCell(WorldCell* parent, int side_idx);
     std::size_t generateVerts(GLfloat* buffer, std::size_t max_size);
     std::size_t generateIndxs(GLuint* buffer, std::size_t max_size);
-    bool checkForDoor(int side_idx);
+    bool canAddDoor(int side_idx);
+    bool hasDoor(int side_idx);
     bool notTooClose(WorldCell* other_cell);
     CellSide sides[12];
     void addDoor(int door_idx, WorldCell& destination);
