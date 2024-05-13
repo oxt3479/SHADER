@@ -117,7 +117,24 @@ vec3 PlayerLocation::getHead() {
     return head;
 };
 vec3 PlayerLocation::getIntercept() {
-    return head+player_up;
+    vec3 intercept, detransformed_head, detransformed_focus;
+    int exit_index;
+    CellSide side;
+    auto findExitSide = [&](WorldCell* cell) {
+        detransformed_head = vec3(inverse(cell->cell_matrix)*vec4(head, 1));
+        detransformed_focus = vec3(inverse(cell->reflection_mat)*vec4(focus, 1));
+            // detransform is needed as CellSide world co-ordinates are relative
+        for ( int i = 0; i < 12; i++) {
+            side = cell->sides[i];
+            intercept = side.findIntercept(detransformed_head, detransformed_focus);
+            if ( intercept != detransformed_head ) {
+                exit_index = i;
+                break;
+            }
+        }
+    };
+    findExitSide(reference_cell);
+    return intercept;
 }
 bool PlayerLocation::accountBoundary(vec3& direction) {
     // This method does two things:

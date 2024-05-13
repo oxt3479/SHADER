@@ -118,13 +118,10 @@ bool checkTriangle(vec3 o, vec3 v, vec3 p1, vec3 p2, vec3 p3,
     
 };
 vec3 CellSide::findIntercept(vec3 o, vec3 v) {
-    /* TODO:  This could be done on the GPU w CUDA or datashaders...*/
     float a,b,c;
     uint inda,indb,indc;
     vec3 p1, p2, p3;
     for (uint i=0; i < num_faces; i++) {
-        /* Consider : saving the last working index, and starting from there,
-        and looping around? (wouldn't work on GPU?) */
         inda = indices[i*3];
         indb = indices[i*3+1];
         indc = indices[i*3+2];
@@ -132,9 +129,11 @@ vec3 CellSide::findIntercept(vec3 o, vec3 v) {
         p2 = vec3(vertices[indb*5], vertices[indb*5+1], vertices[indb*5+2]);
         p3 = vec3(vertices[indc*5], vertices[indc*5+1], vertices[indc*5+2]);
         if ( checkTriangle(o, v, p1, p2, p3, a,b,c) ) {
-            return v*a;
+            if (a > 0) {
+                //forces directional dependency
+                return o+v*a;
+            }
         }
     }
-    throw std::runtime_error("ERROR : no intersection found.");
-    return v;
+    return o;
 };
