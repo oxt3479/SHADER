@@ -14,6 +14,7 @@ PlayerContext::PlayerContext() {
     if (player_location == NULL) {
         player_location = new PlayerLocation();
     }
+    srand(time(NULL)); // Randomize the map...
 };
 VAO cellToVAO(WorldCell& cell, GLfloat* cell_vert_buff, GLuint* cell_indx_buff,\
                              std::size_t v_buff_size, std::size_t i_buff_size) {
@@ -109,6 +110,15 @@ mat4 PlayerLocation::getView(float x, float y, float dt) {
     );// since this is view, keep the origin at 0, and not head...
     return View;
 };
+vec3 PlayerLocation::getFocus() {
+    return focus;
+};
+vec3 PlayerLocation::getHead() {
+    return head;
+};
+vec3 PlayerLocation::getIntercept() {
+    return head+player_up;
+}
 bool PlayerLocation::accountBoundary(vec3& direction) {
     // This method does two things:
     // makes sure that `player_up` is right based on location

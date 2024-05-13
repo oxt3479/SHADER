@@ -27,6 +27,18 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
 }
 
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+    Uniforms* uniforms = getUniforms(window);
+    if (button < 3) { // AKA, left. right, middle
+        if (action == GLFW_PRESS) {
+            uniforms->click_states[button] = true;
+            uniforms->click_times[button] = glfwGetTime();
+        } else if (action == GLFW_RELEASE) {
+            uniforms->click_states[button] = false;
+        }
+    }
+}
+
 void resizeCallback(GLFWwindow* window, int width, int height) {
     Uniforms* uniforms = getUniforms(window);
     uniforms->windWidth = width;
@@ -73,11 +85,12 @@ GLFWwindow* initializeWindow(unsigned int start_width, unsigned int start_height
         std::cout << "Failed to initialize GLAD" << std::endl;
         return NULL;
     }
-
-    glfwSetFramebufferSizeCallback(window, resizeCallback);
-    glfwSetCursorPosCallback(window, mouseCallback);
-    glfwSetKeyCallback(window, keyCallback);
-    glfwSetScrollCallback(window, scrollCallback);
+    
+    glfwSetKeyCallback(             window, keyCallback);
+    glfwSetScrollCallback(          window, scrollCallback);
+    glfwSetCursorPosCallback(       window, mouseCallback);
+    glfwSetMouseButtonCallback(     window, mouseButtonCallback);
+    glfwSetFramebufferSizeCallback( window, resizeCallback);    
 
     Uniforms* uniforms = new Uniforms();
     uniforms->windWidth = start_width;
@@ -99,18 +112,48 @@ std::array<bool, 4> Uniforms::getWASD() {
             key_states[GLFW_KEY_S], key_states[GLFW_KEY_D]};
 }
 
-CameraMats getCameraMats(GLFWwindow* window, CameraMats &camera_mats) {
-    Uniforms* uniforms = getUniforms(window);
-    //PlayerLocation* player_location = uniforms->player_context->player_location;
+void accountCameraControls(Uniforms* uniforms, CameraMats &camera_mats) {
     PlayerLocation* player_location = uniforms->player_context->player_location;
     float ratio = float(uniforms->windWidth)/float(uniforms->windHeight);
-    float dt = std::min( float(uniforms->this_time-uniforms->last_time), 0.002f);
+    float dt = std::min( float(uniforms->this_time-uniforms->last_time), 0.01f);
     
     // Projection matrix: 90° Field of View, display range: 0.1 unit <-> 100 units
     camera_mats.Projection  = glm::perspective(glm::radians(89.0f), ratio, 0.1f, 10.0f);
     camera_mats.View        = player_location->getView( uniforms->mouseX/float(uniforms->windWidth),
                                                         uniforms->mouseY/float(uniforms->windHeight), dt);
     camera_mats.Model       = player_location->getModel( uniforms->getWASD(), dt);
-    
-    return camera_mats;
+}
+
+void accountSpells(Uniforms* uniforms, SpellLog &spell_log) {
+    static GLuint spell_idxs[] = {0};
+    float current_time = glfwGetTime();
+    if (uniforms->click_states[0]) {
+        // The mouse is being held down...
+        if(!spell_log.click_times[spell_log.active_spell]) {
+            // And it's the first frame of it being held down...
+            spell_idxs[0] = 1;
+            glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, spell_idxs);
+            spell_log.click_times[spell_log.active_spell] = current_time;
+        }
+        spell_log.chargeSpell(current_time, 
+                uniforms->player_context->player_location->getFocus(),
+                uniforms->player_context->player_location->getHead());
+    } else if (spell_log.click_times[spell_log.active_spell]) {
+        // The mouse was JUST released
+        spell_idxs[0] = 2;
+        glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, spell_idxs);
+        spell_log.startSpell(current_time, 
+                uniforms->player_context->player_location->getFocus(),
+                uniforms->player_context->player_location->getHead(),
+                uniforms->player_context->player_location->getIntercept());
+    } else if (spell_log.spell_life[spell_log.active_spell]) {
+        // The spell has been cast, and will decay from 1.0f to 0.0f
+        // If its at 0.0f this will not be triggered..
+        spell_log.updateSpellLife(current_time);
+        if (spell_log.spell_life[spell_log.active_spell] == 0.0f) {
+            // The spell is complete, we change the subroutine for the last pass..
+            spell_idxs[0] = 0;
+            glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, spell_idxs);
+        }
+    }
 }

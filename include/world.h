@@ -3,6 +3,7 @@
 
 #include "cell.h"
 #include "bufferObjects.h"
+#include <time.h>
 #include <vector>
 
 
@@ -10,6 +11,9 @@ struct PlayerLocation {
     PlayerLocation();
     glm::mat4 getView(float x, float y, float dt);
     glm::mat4 getModel(std::array<bool, 4> WASD, float dt);
+    glm::vec3 getFocus();
+    glm::vec3 getHead();
+    glm::vec3 getIntercept();
     WorldCell* reference_cell = NULL;
     
 private:
