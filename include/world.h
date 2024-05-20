@@ -13,7 +13,13 @@ struct PlayerLocation {
     glm::mat4 getModel(std::array<bool, 4> WASD, float dt);
     glm::vec3 getFocus();
     glm::vec3 getHead();
-    glm::vec3 getIntercept();
+    glm::vec3 getPUp();
+    float getHeight();
+    void setFloorIndex(int index);
+    /* glm::vec3 getIntercept(glm::vec3* intercept_index); */
+    WorldCell* getIntercept(glm::vec3* intercept_point, int* intercept_idx); 
+    void teleportHead(glm::vec3 target);
+    void teleportPUp(glm::vec3 target);
     WorldCell* reference_cell = NULL;
     
 private:
