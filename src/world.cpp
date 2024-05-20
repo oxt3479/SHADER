@@ -116,25 +116,53 @@ vec3 PlayerLocation::getFocus() {
 vec3 PlayerLocation::getHead() {
     return head;
 };
-vec3 PlayerLocation::getIntercept() {
+vec3 PlayerLocation::getPUp() {
+    return player_up;
+};
+float PlayerLocation::getHeight() {
+    return height;
+};
+void PlayerLocation::teleportHead(glm::vec3 target) {
+    head = target;
+};
+void PlayerLocation::teleportPUp(glm::vec3 target) {
+    player_up = target;
+};
+WorldCell* PlayerLocation::getIntercept(vec3* intercept_point, int* intercept_idx) {
     vec3 intercept, detransformed_head, detransformed_focus;
-    int exit_index;
+    int exit_index = -1;
     CellSide side;
+    WorldCell* next_cell = reference_cell;
+    
     auto findExitSide = [&](WorldCell* cell) {
         detransformed_head = vec3(inverse(cell->cell_matrix)*vec4(head, 1));
         detransformed_focus = vec3(inverse(cell->reflection_mat)*vec4(focus, 1));
             // detransform is needed as CellSide world co-ordinates are relative
         for ( int i = 0; i < 12; i++) {
-            side = cell->sides[i];
-            intercept = side.findIntercept(detransformed_head, detransformed_focus);
-            if ( intercept != detransformed_head ) {
-                exit_index = i;
-                break;
+            if ( exit_index != i ) { // Since all cells are mirrored, skip the last exit index
+                side = cell->sides[i];
+                intercept = side.findIntercept(detransformed_head, detransformed_focus);
+                if ( intercept != detransformed_head ) {
+                    exit_index = i;
+                    intercept = cell->origin+vec3(cell->reflection_mat*vec4(intercept,1));
+                        // This makes the intercept useful in the actual game.
+                    break;
+                }
             }
         }
     };
+    
+    int depth = 0;
     findExitSide(reference_cell);
-    return intercept;
+    while (next_cell->hasDoor(exit_index)) {
+        next_cell = next_cell->doors[exit_index];
+        findExitSide(next_cell);
+        depth++;
+        if (depth > 100) throw std::runtime_error("Max door intercept check passed");
+    }
+    std::memcpy(intercept_point, &intercept, sizeof(vec3));
+    std::memcpy(intercept_idx, &exit_index, sizeof(int));
+    return next_cell;
 }
 bool PlayerLocation::accountBoundary(vec3& direction) {
     // This method does two things:
@@ -213,6 +241,9 @@ uint PlayerLocation::getFloorIndex() {
         // NOTE: this does NOT create an infinte looping paradox <3
     return min_idx;
 };
+void PlayerLocation::setFloorIndex(int index) {
+    floor_indx = index;
+}
 void PlayerLocation::updateFocus(float x, float y, float dt) {
     //For now this is 'normalized', but hypothetically,
     //focus could permit DOF changes...
