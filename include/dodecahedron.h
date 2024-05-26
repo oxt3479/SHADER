@@ -53,11 +53,11 @@ struct Dodecahedron {
 
     GLfloat texture_corners[5*2] = {
         //temporary approximation...
-        0.5f, 0.0f,
-        0.0f, 0.4f,
-        0.2f, 1.0f,
-        0.8f, 1.0f,
-        1.0f, 0.4f
+        0.48f, 0.0f,
+        0.0f, 0.38f,
+        0.2f, 0.95f,
+        0.8f, 0.95f,
+        1.0f, 0.38f
     };
 
     unsigned pentagonal_side_indeces[12*5] = {
