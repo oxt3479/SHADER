@@ -8,8 +8,6 @@
 
 using namespace glm;
 
-Dodecahedron dodecahedron;
-
 PlayerContext::PlayerContext() {
     if (player_location == NULL) {
         player_location = new PlayerLocation();
@@ -175,7 +173,7 @@ bool PlayerLocation::accountBoundary(vec3& direction) {
     float cur_dist, ref_weight;
     vec3 hypothetical_origin, ref_up, door_up;
     for (int i = 0; i < 5; i++) { // There are 5 adjacent sides...
-        adjacent_indx       = dodecahedron.adjacency_matrix[floor_indx*5 + i]; 
+        adjacent_indx       = Dodecahedron::adjacency_matrix[floor_indx*5 + i]; 
             // Map from 1-5 to cell normal indeces
         hypothetical_origin = reference_cell->origin-reference_cell->floor_norms[adjacent_indx]*NORMAL_SCALE;
         cur_dist            = length(head - direction - hypothetical_origin);
