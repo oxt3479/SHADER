@@ -8,7 +8,7 @@
 #include <glad/glad.h>
 
 struct Dodecahedron {
-    GLfloat prim_cell_verts[20*3] = {
+    static constexpr GLfloat prim_cell_verts[20*3] = {
         0.0f, 1.0f+1.0f/PHI, 1.0f-1.0f/(PHI*PHI),
         0.0f, -1.0f-1.0f/PHI, -1.0f+1.0f/(PHI*PHI),
         0.0f, -1.0f-1.0f/PHI, 1.0f-1.0f/(PHI*PHI),
@@ -34,7 +34,7 @@ struct Dodecahedron {
         -1.0f, -1.0f, -1.0f
     };
     
-    GLuint prim_cell_indxs[12*9] = {
+    static constexpr GLuint prim_cell_indxs[12*9] = {
         // right tri, left tri, center tri. (all meet at top)
         // (for passing the primitive directly into shader with no texture)
         4, 12, 0,   4, 13, 3,   4, 0, 3, 
@@ -51,7 +51,7 @@ struct Dodecahedron {
         9, 18, 6,   9, 19, 5,   9, 6, 5
     };
 
-    GLfloat texture_corners[5*2] = {
+    static constexpr GLfloat texture_corners[5*2] = {
         //temporary approximation...
         0.48f, 0.0f,
         0.0f, 0.38f,
@@ -60,7 +60,7 @@ struct Dodecahedron {
         1.0f, 0.38f
     };
 
-    unsigned pentagonal_side_indeces[12*5] = {
+    static constexpr unsigned pentagonal_side_indeces[12*5] = {
         // These wrap around the sides
         // there is a x3 redundancy (3 sides meet per corner)
         4,13,3,0,12,
@@ -77,49 +77,12 @@ struct Dodecahedron {
         9,19,5,6,18
     };
 
-    GLfloat textured_verts[12*5*5] = {
-        // 12 sides, 5 corners, xyz uv 
-    };
+    static GLfloat textured_verts[12*5*5]; // 12 sides, 5 corners, xyz uv 
+    static GLuint textured_indxs[12*9];
+    
+    static void populateTexturedVerts();
 
-    GLuint textured_indxs[12*9] = {
-
-    };
-
-    constexpr void populateTexturedVerts() {
-        int tv = 0, 
-            pcv = 0, 
-            //(primitive_cell_verts index) 
-            tc = 0, 
-            //(texture_corners index)
-            ti = 0;
-            //(texture_indxs index)
-        for (int i = 0; i < 12; i++) {
-            for (int j = 0; j < 5; j++) {
-                pcv = pentagonal_side_indeces[i*5 + j] * 3;
-                tc = j*2;
-                textured_verts[tv++] = prim_cell_verts[pcv++];
-                textured_verts[tv++] = prim_cell_verts[pcv++];
-                textured_verts[tv++] = prim_cell_verts[pcv++];
-                textured_verts[tv++] = texture_corners[tc++];
-                textured_verts[tv++] = texture_corners[tc++];
-            }
-            
-            textured_indxs[ti++] = i*5+0;
-            textured_indxs[ti++] = i*5+1;
-            textured_indxs[ti++] = i*5+2;
-
-            textured_indxs[ti++] = i*5+0;
-            textured_indxs[ti++] = i*5+2;
-            textured_indxs[ti++] = i*5+3;
-
-            textured_indxs[ti++] = i*5+0;
-            textured_indxs[ti++] = i*5+3;
-            textured_indxs[ti++] = i*5+4;
-
-        }
-    }
-
-    int adjacency_matrix[12*5] = {
+    static constexpr int adjacency_matrix[12*5] = {
         // Helps reduce redundant checks with no-adjacent sides
         1, 2, 3, 4, 8,
         0, 2, 3, 5, 6,
@@ -135,9 +98,15 @@ struct Dodecahedron {
         4, 7, 8, 9, 10
     };
 
-    Dodecahedron() {
-        populateTexturedVerts();
-    }
+    struct Initializer {
+        Initializer() {
+            populateTexturedVerts();
+        }
+    };
+    static Initializer initializer;
+
+private:
+    Dodecahedron();
 };
 
 #endif

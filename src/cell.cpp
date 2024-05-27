@@ -1,16 +1,14 @@
 #include "cell.h"
 using namespace glm;
 
-Dodecahedron ref_dodecahedron;
 void buildSides(WorldCell* world_cell) {
     //Simplest possible world cell initialization...,
     //assumes building directly from primitve. 3 triangels per
     //pentagon means +=9 
-    //TODO: this may be rundnadant if ref_dodecahedron 
-    //is always the same...
-    GLuint* cell_indxs_ptr = ref_dodecahedron.textured_indxs;
+    
+    GLuint* cell_indxs_ptr = Dodecahedron::textured_indxs;
     for (uint i=0; i < 12; i++) {
-        world_cell->sides[i].vertices = ref_dodecahedron.textured_verts;
+        world_cell->sides[i].vertices = Dodecahedron::textured_verts;
         world_cell->sides[i].indices  = cell_indxs_ptr;
         world_cell->sides[i].num_faces = 3;
         cell_indxs_ptr+=9;
@@ -52,7 +50,7 @@ WorldCell::WorldCell(WorldCell* parent, int side_idx) {
     cell_matrix = translate(cell_matrix, origin)*reflection_mat;
 };
 std::size_t WorldCell::generateVerts(GLfloat* buffer, std::size_t max_size) {
-    std::memcpy(buffer, &ref_dodecahedron.textured_verts, max_size);
+    std::memcpy(buffer, &Dodecahedron::textured_verts, max_size);
     return max_size;
 };
 std::size_t WorldCell::generateIndxs(GLuint* buffer, std::size_t max_size) {
