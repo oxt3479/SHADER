@@ -5,7 +5,7 @@
 #include "models.h"
 
 int main() {
-    GLFWwindow* window = initializeWindow(768, 768, "SHADER");
+    GLFWwindow* window = initializeWindow(768, 768, "DODECAPLEX");
 
     ShaderProgram shader_prog(  SHADER_DIR "/displacement.vert", \
                                 SHADER_DIR "/textured.frag", false);
@@ -38,9 +38,9 @@ int main() {
             U_SPELL_HEAD  = glGetUniformLocation(shader_prog.ID, "SPELL_HEAD");
 
             addUniformRGBATexture(shader_prog.ID, "rgbTexture", \
-                TEXTURE_DIR "/tile_floor_a.png", 0);
-            addUniformRGBATexture(shader_prog.ID, "depthTexture", \
-                TEXTURE_DIR "/disp_test.png", 1);
+                TEXTURE_DIR "/curved.png", 0);
+            addUniformRGBATexture(shader_prog.ID, "specTexture", \
+                TEXTURE_DIR "/curved_spec.png", 1);
 
             uniforms->last_time         = glfwGetTime();
             uniforms->loading           = false;

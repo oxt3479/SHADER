@@ -93,8 +93,8 @@ GLFWwindow* initializeWindow(unsigned int start_width, unsigned int start_height
     glfwSetFramebufferSizeCallback( window, resizeCallback);    
 
     Uniforms* uniforms = new Uniforms();
-    uniforms->windWidth = start_width;
-    uniforms->windHeight = start_height;
+    uniforms->windWidth = system_width;
+    uniforms->windHeight = system_height;
     glfwSetWindowUserPointer(window, uniforms);
     if (window_is_focused)
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
