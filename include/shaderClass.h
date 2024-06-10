@@ -2,15 +2,14 @@
 #define SHADERCLASS_H
 
 #include <glad/glad.h>
-#include <stb/stb_image.h>
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <cerrno>
+#include "textures.h"
 
 std::string get_file_contents(const std::string& filename, const std::string& parentPath);
-void addUniformRGBATexture(GLuint shaderID, const char* samplerName, const char* imageFile, int texture_idx);
 
 class ShaderProgram {
 public:
