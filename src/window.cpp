@@ -129,8 +129,8 @@ void accountSpells(Uniforms* uniforms, SpellLog &spell_log) {
     static glm::vec3 intercept_point;
     static int intercept_index;
     float current_time = glfwGetTime();
-    if (uniforms->click_states[0]) {
-        // The mouse is being held down...
+    if (uniforms->click_states[0] && !spell_log.spell_life[spell_log.active_spell]) {
+        // The mouse is being held down... AND the spell is not currently running.
         if(!spell_log.click_times[spell_log.active_spell]) {
             // And it's the first frame of it being held down...
             spell_idxs[0] = 1;
