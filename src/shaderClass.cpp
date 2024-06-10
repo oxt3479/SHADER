@@ -1,4 +1,3 @@
-#define STB_IMAGE_IMPLEMENTATION
 #include "shaderClass.h"
 
 std::string get_file_contents(const std::string& filename, const std::string& parentPath = "") {
@@ -87,28 +86,4 @@ void ShaderProgram::checkLinkingErrors(unsigned int program) {
         glGetProgramInfoLog(program, 1024, NULL, infoLog);
         std::cout << "SHADER_LINKING_ERROR for: PROGRAM\n" << infoLog << std::endl;
     }
-}
-
-void addUniformRGBATexture(GLuint shaderID, const char* samplerName, const char* imageFile, int texture_idx) {
-    int width, height, channels;
-    unsigned char* image_content = stbi_load(imageFile, &width, &height, &channels, STBI_rgb_alpha);
-        if (!image_content) { throw std::runtime_error("Missing texture image file");}
-    
-    GLuint textureID;
-    glGenTextures(1, &textureID);
-    glActiveTexture(GL_TEXTURE0+texture_idx);
-    glBindTexture(GL_TEXTURE_2D, textureID);
-
-    glTexImage2D(   GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, \
-                    GL_UNSIGNED_BYTE, image_content);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    GLuint location = glGetUniformLocation(shaderID, samplerName);
-    glUniform1i(location, texture_idx);
-
-    stbi_image_free(image_content);    
 }

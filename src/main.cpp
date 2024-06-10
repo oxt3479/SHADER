@@ -20,6 +20,7 @@ int main() {
             U_SPELL_LIFE, U_CAST_LIFE, U_SPELL_FOCUS, U_SPELL_HEAD;
     CameraMats mats;
     SpellLog spells;
+    TextureLibrary texture_library;
 
     while (!glfwWindowShouldClose(window)) {
         if (uniforms->loading) {
@@ -37,11 +38,8 @@ int main() {
             U_SPELL_FOCUS = glGetUniformLocation(shader_prog.ID, "SPELL_FOCUS");
             U_SPELL_HEAD  = glGetUniformLocation(shader_prog.ID, "SPELL_HEAD");
 
-            addUniformRGBATexture(shader_prog.ID, "rgbTexture", \
-                TEXTURE_DIR "/curved.png", 0);
-            addUniformRGBATexture(shader_prog.ID, "specTexture", \
-                TEXTURE_DIR "/curved_spec.png", 1);
-
+            texture_library.linkFullLibrary(shader_prog.ID);
+            
             uniforms->last_time         = glfwGetTime();
             uniforms->loading           = false;
             uniforms->player_context    = &player_context;
