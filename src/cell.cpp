@@ -34,6 +34,7 @@ WorldCell::WorldCell() {
     buildSides(this);
     cell_matrix = mat4(1.0);
     origin = vec3(0.0);
+    cell_type = 2.0f; // 'Normal' origin texture...
 };
 WorldCell::WorldCell(WorldCell* parent, int side_idx) {
     buildSides(this);
@@ -48,9 +49,13 @@ WorldCell::WorldCell(WorldCell* parent, int side_idx) {
     reflection_mat *= parent->reflection_mat;
     origin = getNeighborOffset(parent->floor_norms[side_idx]) + parent->origin;
     cell_matrix = translate(cell_matrix, origin)*reflection_mat;
+    cell_type = rand()%3;
 };
 std::size_t WorldCell::generateVerts(GLfloat* buffer, std::size_t max_size) {
     std::memcpy(buffer, &Dodecahedron::textured_verts, max_size);
+    for (int i = 5; i < max_size/sizeof(GLfloat); i+=6) {
+        buffer[i] = cell_type;
+    }
     return max_size;
 };
 std::size_t WorldCell::generateIndxs(GLuint* buffer, std::size_t max_size) {
@@ -123,9 +128,9 @@ vec3 CellSide::findIntercept(vec3 o, vec3 v) {
         inda = indices[i*3];
         indb = indices[i*3+1];
         indc = indices[i*3+2];
-        p1 = vec3(vertices[inda*5], vertices[inda*5+1], vertices[inda*5+2]);
-        p2 = vec3(vertices[indb*5], vertices[indb*5+1], vertices[indb*5+2]);
-        p3 = vec3(vertices[indc*5], vertices[indc*5+1], vertices[indc*5+2]);
+        p1 = vec3(vertices[inda*VERTEX_ELEMENT_COUNT], vertices[inda*VERTEX_ELEMENT_COUNT+1], vertices[inda*VERTEX_ELEMENT_COUNT+2]);
+        p2 = vec3(vertices[indb*VERTEX_ELEMENT_COUNT], vertices[indb*VERTEX_ELEMENT_COUNT+1], vertices[indb*VERTEX_ELEMENT_COUNT+2]);
+        p3 = vec3(vertices[indc*VERTEX_ELEMENT_COUNT], vertices[indc*VERTEX_ELEMENT_COUNT+1], vertices[indc*VERTEX_ELEMENT_COUNT+2]);
         if ( checkTriangle(o, v, p1, p2, p3, a,b,c) ) {
             if (a > 0) {
                 //forces directional dependency

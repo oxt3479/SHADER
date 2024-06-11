@@ -1,6 +1,6 @@
 #include "dodecahedron.h"
 
-GLfloat Dodecahedron::textured_verts[12*5*5]; // 12 sides, 5 corners, xyz uv 
+GLfloat Dodecahedron::textured_verts[12*5*VERTEX_ELEMENT_COUNT]; // 12 sides, 5 corners, xyz uv i
 GLuint Dodecahedron::textured_indxs[12*9];
 
 Dodecahedron::Initializer Dodecahedron::initializer;
@@ -24,6 +24,10 @@ void Dodecahedron::populateTexturedVerts() {
             textured_verts[tv++] = prim_cell_verts[pcv++];
             textured_verts[tv++] = texture_corners[tc++];
             textured_verts[tv++] = texture_corners[tc++];
+            textured_verts[tv++] = 0.0f; 
+                // Default texture index is 0 
+                // you change this later when loading to GPU 
+                // NOTE: this is a static initializer)
         }
         
         textured_indxs[ti++] = i*5+0;
