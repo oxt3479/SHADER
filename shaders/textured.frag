@@ -1,6 +1,6 @@
 #version 410 core
 
-in vec2 textureCoord;
+in vec3 textureCoord;
 in float zDepth;
 in vec4 world_position;
 
@@ -16,8 +16,6 @@ uniform vec3 SPELL_FOCUS;
 out vec4 color;
 
 
-int TEXTURE_INDEX = 0;
-
 subroutine vec4 spell (vec4 color);
 subroutine uniform spell currentSpell;
 
@@ -25,7 +23,7 @@ subroutine (spell) vec4 emptySpell(vec4 color) {
     return color;
 }
 subroutine (spell) vec4 castTeleportA(vec4 color) {
-    vec4 spec_data   = texture(specularTextures, vec3(textureCoord, TEXTURE_INDEX));
+    vec4 spec_data   = texture(specularTextures, textureCoord);
     float spell_dist = length(cross(SPELL_FOCUS, SPELL_HEAD-world_position.xyz));
     float spell_flux = spell_dist+ sin(u_time/10.0)*0.001;
     vec2 window      = (gl_FragCoord.xy-(u_resolution/2.0))/((max(u_resolution.x, u_resolution.y) * pow(.1, SPELL_LIFE))*.5);
@@ -53,8 +51,8 @@ vec4 hueShifter(vec4 color, float u_theta){
     return  vec4(mat3( 1.0, 1.0, 1.0, 0.5696804, -0.1620848, -0.6590654, 0.3235513, -0.3381869, 0.8901581 ) * yiqColor, 1.0);
 }
 void main(){
-    color = texture(pentagonTextures, vec3(textureCoord, TEXTURE_INDEX))/clamp(zDepth/1.5, 1.0, 10.0);
-    color = hueShifter(color, world_position.x/5.);
-    color = color*2.0;
+    color = texture(pentagonTextures, textureCoord)/clamp(zDepth/1.5, 1.0, 10.0);
+    //color = hueShifter(color, world_position.x/5.);
+    //color = color*2.0;
     color = currentSpell(color);
 }

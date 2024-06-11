@@ -7,6 +7,8 @@
 
 #include <glad/glad.h>
 
+#define VERTEX_ELEMENT_COUNT 6
+
 struct Dodecahedron {
     static constexpr GLfloat prim_cell_verts[20*3] = {
         0.0f, 1.0f+1.0f/PHI, 1.0f-1.0f/(PHI*PHI),
@@ -77,7 +79,7 @@ struct Dodecahedron {
         9,19,5,6,18
     };
 
-    static GLfloat textured_verts[12*5*5]; // 12 sides, 5 corners, xyz uv 
+    static GLfloat textured_verts[12*5*VERTEX_ELEMENT_COUNT]; // 12 sides, 5 corners, xyz uv i
     static GLuint textured_indxs[12*9];
     
     static void populateTexturedVerts();
