@@ -7,7 +7,7 @@ GLfloat Dodecahedron::texture_corners[5*2];
 unsigned Dodecahedron::pentagonal_side_indeces[12*5];
 int Dodecahedron::adjacency_matrix[12*5];
 
-GLfloat Dodecahedron::textured_verts[12*5*5];
+GLfloat Dodecahedron::textured_verts[12*5*VERTEX_ELEMENT_COUNT];
 GLuint Dodecahedron::textured_indxs[12*9];
 
 // Initialize the static Initializer
