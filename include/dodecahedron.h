@@ -8,6 +8,8 @@
 #include <glad/glad.h>
 #include <cstring>
 
+#define VERTEX_ELEMENT_COUNT 6
+
 struct Dodecahedron {
     static GLfloat prim_cell_verts[20*3];
     static GLuint prim_cell_indxs[12*9];
@@ -15,7 +17,7 @@ struct Dodecahedron {
     static unsigned pentagonal_side_indeces[12*5];
     static int adjacency_matrix[12*5];
 
-    static GLfloat textured_verts[12*5*5]; // 12 sides, 5 corners, xyz uv 
+    static GLfloat textured_verts[12*5*VERTEX_ELEMENT_COUNT]; // 12 sides, 5 corners, xyz uv i
     static GLuint textured_indxs[12*9];
 
     struct Initializer {

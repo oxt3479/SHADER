@@ -1,7 +1,7 @@
 #version 410 core
 
 layout(location = 0) in vec3 model_verts;
-layout(location = 1) in vec2 text_coords;
+layout(location = 1) in vec3 text_coords;
 layout(location = 2) in mat4 DISP;
 
 //uniform sampler2D depthTexture;
@@ -9,7 +9,7 @@ uniform mat4 CAMERA;
 uniform mat4 WORLD;
 uniform float u_time;
 
-out vec2 textureCoord;
+out vec3 textureCoord;
 out vec3 surfaceNorm;
 out vec4 world_position;
 out float zDepth;
