@@ -26,8 +26,8 @@ VAO cellToVAO(WorldCell& cell, GLfloat* cell_vert_buff, GLuint* cell_indx_buff,\
         (GLuint*) cell_indx_buff, indxs_size
     );
 
-    cell_vao.LinkAttrib(cell_vao.vbo, 0, 3, GL_FLOAT, 5 * sizeof(float), (void*)0);
-    cell_vao.LinkAttrib(cell_vao.vbo, 1, 2, GL_FLOAT, 5 * sizeof(float), (void*)(3*sizeof(float)));
+    cell_vao.LinkAttrib(cell_vao.vbo, 0, 3, GL_FLOAT, VERTEX_ELEMENT_COUNT * sizeof(float), (void*)0); // xyz
+    cell_vao.LinkAttrib(cell_vao.vbo, 1, 3, GL_FLOAT, VERTEX_ELEMENT_COUNT * sizeof(float), (void*)(3*sizeof(float))); // uv i
     cell_vao.LinkMat4(cell_vao.cbo, 2);
     return cell_vao;
 };
@@ -74,7 +74,7 @@ std::vector<WorldCell*> PlayerContext::establishNeighborhood() {
 void PlayerContext::linkPlayerCellVAOs() {
     std::vector<WorldCell*> neighborhood = establishNeighborhood();
 
-    std::size_t v_size = MAX_CELL_VERTS*5*sizeof(GLfloat);
+    std::size_t v_size = MAX_CELL_VERTS*6*sizeof(GLfloat);
     std::size_t i_size = MAX_CELL_FACES*3*sizeof(GLuint);
 
     GLfloat* v_buff = (GLfloat*) malloc(v_size);

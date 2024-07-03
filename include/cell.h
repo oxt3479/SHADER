@@ -82,6 +82,7 @@ struct WorldCell {
     glm::mat4 reflection_mat = glm::mat4(1.0);
     glm::vec3 origin = glm::vec3(0.);
     WorldCell* doors[12] = {NULL};    
+    float cell_type = 0.0f;
 };
 
 #endif
