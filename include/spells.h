@@ -37,15 +37,15 @@ struct SpellLog
             intercept_indeces   [active_spell], 
             world_cells         [active_spell], context);
     };
-    void startSpell(float time, glm::vec3 focus, glm::vec3 head, glm::vec3 player_up, WorldCell* target_cell, glm::vec3 intercept, int intercept_idx, PlayerContext* context) {
+    void startSpell(float time, glm::vec3 focus, glm::vec3 head, glm::vec3 player_up, InterceptResult intercept_result, PlayerContext* context) {
         spell_life          [active_spell] = 1.0f;
         release_times       [active_spell] = time;
         spell_focus         [active_spell] = focus;
         spell_head          [active_spell] = head;
         cast_player_up      [active_spell] = player_up;
-        world_cells         [active_spell] = target_cell;
-        cast_intercepts     [active_spell] = intercept;
-        intercept_indeces   [active_spell] = intercept_idx;
+        world_cells         [active_spell] = intercept_result.cell;
+        cast_intercepts     [active_spell] = intercept_result.point;
+        intercept_indeces   [active_spell] = intercept_result.index;
         click_times         [active_spell] = NULL;
         startSpellFunction[active_spell](
             spell_head          [active_spell], 
