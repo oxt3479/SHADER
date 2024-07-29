@@ -3,6 +3,8 @@
 #include "shaderClass.h"
 #include "bufferObjects.h"
 #include "models.h"
+#include <chrono>
+#include <thread>
 
 int main() {
     GLFWwindow* window = initializeWindow(768, 768, "DODECAPLEX");
@@ -23,6 +25,8 @@ int main() {
     TextureLibrary texture_library;
 
     while (!glfwWindowShouldClose(window)) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
         if (uniforms->loading) {
             shader_prog.Load();
             shader_prog.Activate();
