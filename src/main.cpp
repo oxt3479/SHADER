@@ -9,40 +9,50 @@
 int main() {
     GLFWwindow* window = initializeWindow(768, 768, "DODECAPLEX");
 
-    ShaderProgram shader_prog(  SHADER_DIR "/displacement.vert", \
-                                SHADER_DIR "/textured.frag", false);
+    ShaderProgram world_shader( SHADER_DIR "/displacement.vert", \
+                                SHADER_DIR "/spell.frag", false);
+/*     ShaderProgram book_shader(  SHADER_DIR "/book.vert",\
+                                SHADER_DIR "/book.frag", false); */
     
-    PlayerContext player_context;    
+    
+    PlayerContext player_context;
+    /* world_shader.Activate(); */
     player_context.linkPlayerCellVAOs();
     
+    
+    /* book_shader.Activate(); */
+    /* spell_log.linkGrimoireVAO(); */
+
     Uniforms* uniforms = getUniforms(window);
     
     float time;
     GLuint  U_RESOLUTION, U_MOUSE, U_SCROLL, U_TIME, U_CAMERA, U_WORLD, \
             U_SPELL_LIFE, U_CAST_LIFE, U_SPELL_FOCUS, U_SPELL_HEAD;
     CameraMats mats;
-    SpellLog spells;
+    SpellLog spell_log;
     TextureLibrary texture_library;
 
     while (!glfwWindowShouldClose(window)) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
         if (uniforms->loading) {
-            shader_prog.Load();
-            shader_prog.Activate();
+            world_shader.Load();
+            world_shader.Activate();
+            /* book_shader.Load(); */
 
-            U_RESOLUTION  = glGetUniformLocation(shader_prog.ID, "u_resolution");
-            U_MOUSE       = glGetUniformLocation(shader_prog.ID, "u_mouse");
-            U_SCROLL      = glGetUniformLocation(shader_prog.ID, "u_scroll");
-            U_TIME        = glGetUniformLocation(shader_prog.ID, "u_time");
-            U_CAMERA      = glGetUniformLocation(shader_prog.ID, "CAMERA");
-            U_WORLD       = glGetUniformLocation(shader_prog.ID, "WORLD");
-            U_CAST_LIFE   = glGetUniformLocation(shader_prog.ID, "CAST_LIFE");
-            U_SPELL_LIFE  = glGetUniformLocation(shader_prog.ID, "SPELL_LIFE");            
-            U_SPELL_FOCUS = glGetUniformLocation(shader_prog.ID, "SPELL_FOCUS");
-            U_SPELL_HEAD  = glGetUniformLocation(shader_prog.ID, "SPELL_HEAD");
+            U_RESOLUTION  = glGetUniformLocation(world_shader.ID, "u_resolution");
+            U_MOUSE       = glGetUniformLocation(world_shader.ID, "u_mouse");
+            U_SCROLL      = glGetUniformLocation(world_shader.ID, "u_scroll");
+            U_TIME        = glGetUniformLocation(world_shader.ID, "u_time");
+            U_CAMERA      = glGetUniformLocation(world_shader.ID, "CAMERA");
+            U_WORLD       = glGetUniformLocation(world_shader.ID, "WORLD");
+            U_CAST_LIFE   = glGetUniformLocation(world_shader.ID, "CAST_LIFE");
+            U_SPELL_LIFE  = glGetUniformLocation(world_shader.ID, "SPELL_LIFE");            
+            U_SPELL_FOCUS = glGetUniformLocation(world_shader.ID, "SPELL_FOCUS");
+            U_SPELL_HEAD  = glGetUniformLocation(world_shader.ID, "SPELL_HEAD");
 
-            texture_library.linkFullLibrary(shader_prog.ID);
+            texture_library.linkPentagonLibrary(world_shader.ID);
+            /* texture_library.linkGrimoireLibrary(book_shader.ID); */
             
             uniforms->last_time         = glfwGetTime();
             uniforms->loading           = false;
@@ -63,17 +73,17 @@ int main() {
                                     uniforms->mouseY);
         glUniform1f(U_SCROLL,       uniforms->scroll);
         glUniform1f(U_TIME, time);
-        
-        accountSpells(uniforms, spells);
+                
+        accountSpells(uniforms, spell_log);
 
-        glUniform1f(U_CAST_LIFE,    spells.cast_life[spells.active_spell]);
-        glUniform1f(U_SPELL_LIFE,   spells.spell_life[spells.active_spell]);
-        glUniform3f(U_SPELL_FOCUS,  spells.spell_focus[spells.active_spell].x,
-                                    spells.spell_focus[spells.active_spell].y,
-                                    spells.spell_focus[spells.active_spell].z);
-        glUniform3f(U_SPELL_HEAD,   spells.spell_head[spells.active_spell].x,
-                                    spells.spell_head[spells.active_spell].y,
-                                    spells.spell_head[spells.active_spell].z);
+        glUniform1f(U_CAST_LIFE,    spell_log.cast_life[spell_log.active_spell]);
+        glUniform1f(U_SPELL_LIFE,   spell_log.spell_life[spell_log.active_spell]);
+        glUniform3f(U_SPELL_FOCUS,  spell_log.spell_focus[spell_log.active_spell].x,
+                                    spell_log.spell_focus[spell_log.active_spell].y,
+                                    spell_log.spell_focus[spell_log.active_spell].z);
+        glUniform3f(U_SPELL_HEAD,   spell_log.spell_head[spell_log.active_spell].x,
+                                    spell_log.spell_head[spell_log.active_spell].y,
+                                    spell_log.spell_head[spell_log.active_spell].z);
 
         accountCameraControls(uniforms, mats);
 
@@ -81,6 +91,9 @@ int main() {
         glUniformMatrix4fv(U_WORLD,  1, GL_FALSE, &(mats.Model)[0][0]);
         
         player_context.drawPlayerCellVAOs();
+
+        /* book_shader.Activate(); */
+        /* spell_log.drawGrimoireVAO(); */
 
         glfwSwapBuffers(window);
         glfwPollEvents();

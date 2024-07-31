@@ -25,7 +25,7 @@ void TextureLibrary::readRGBATextureArray(const char* paths[], int num_imgs, int
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
-void TextureLibrary::linkFullLibrary(GLuint shaderID) {
+void TextureLibrary::linkPentagonLibrary(GLuint shaderID) {
     GLuint location;
     
     readRGBATextureArray(pentagon_paths, 3, 0);
@@ -36,4 +36,11 @@ void TextureLibrary::linkFullLibrary(GLuint shaderID) {
     location = glGetUniformLocation(shaderID, "specularTextures");
     glUniform1i(location, 1);
 
+}
+
+void TextureLibrary::linkGrimoireLibrary(GLuint shaderID) {
+    GLuint location;
+    readRGBATextureArray(grimoire_paths, 2, 2);
+    location = glGetUniformLocation(shaderID, "grimoireTextures");
+    glUniform1i(location, 2);
 }
