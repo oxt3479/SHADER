@@ -60,6 +60,28 @@ struct SpellLog
         spell_focus [active_spell] = focus;
         spell_head  [active_spell] = head;
     };
+    GLfloat verts[4*4] = {
+        // Positions    // Texture Coords
+        0.3f, -0.3f,     0.0f, 1.0f,
+        0.9f, -0.3f,     1.0f, 1.0f,
+        0.9f, -0.9f,     1.0f, 0.0f,
+        0.3f, -0.9f,     0.0f, 0.0f
+    };
+
+    GLuint indices[6] = {
+        0, 1, 2,
+        2, 3, 0
+    };
+
+    GLfloat* vert_ptr = verts;
+    GLuint* indx_ptr = indices;
+    GLsizei vert_size = sizeof(verts);
+    GLsizei indx_size = sizeof(indices);
+
+    VAO grimoire_vao = VAO(vert_ptr, vert_size, indx_ptr, indx_size);
+
+    void linkGrimoireVAO();
+    void drawGrimoireVAO();
 };
 
 #endif

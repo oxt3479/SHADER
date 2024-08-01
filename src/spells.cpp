@@ -13,3 +13,11 @@ void teleportAStart(glm::vec3 start, glm::vec3 start_up, glm::vec3 target, int t
     context->player_location->setFloorIndex(target_index);
     context->player_location->reference_cell = cell;
 };
+
+void SpellLog::linkGrimoireVAO(){
+    grimoire_vao.LinkAttrib(grimoire_vao.vbo, 0, 2, GL_FLOAT, 4 * sizeof(float), (void*)0); // Position attribute
+    grimoire_vao.LinkAttrib(grimoire_vao.vbo, 1, 2, GL_FLOAT, 4 * sizeof(float), (void*)(2 * sizeof(float))); // Texture coord attribute    
+}
+void SpellLog::drawGrimoireVAO(){
+    grimoire_vao.DrawElements(GL_TRIANGLES);
+};
