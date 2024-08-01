@@ -148,8 +148,8 @@ void accountSpells(Uniforms* uniforms, SpellLog &spell_log) {
                 uniforms->player_context->player_location->getFocus(),
                 uniforms->player_context->player_location->getHead(),
                 uniforms->player_context->player_location->getPUp(),
-                uniforms->player_context->player_location->getIntercept(&intercept_point, &intercept_index),
-                intercept_point, intercept_index, uniforms->player_context);
+                uniforms->player_context->player_location->getIntercept(),
+                uniforms->player_context);
     } else if (spell_log.spell_life[spell_log.active_spell]) {
         // The spell has been cast, and will decay from 1.0f to 0.0f
         // If its at 0.0f this will not be triggered..

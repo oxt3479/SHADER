@@ -7,6 +7,12 @@
 #include <vector>
 
 
+struct InterceptResult {
+    WorldCell* cell;
+    glm::vec3 point;
+    int index;
+};
+
 struct PlayerLocation {    
     PlayerLocation();
     glm::mat4 getView(float x, float y, float dt);
@@ -16,8 +22,7 @@ struct PlayerLocation {
     glm::vec3 getPUp();
     float getHeight();
     void setFloorIndex(int index);
-    /* glm::vec3 getIntercept(glm::vec3* intercept_index); */
-    WorldCell* getIntercept(glm::vec3* intercept_point, int* intercept_idx); 
+    InterceptResult getIntercept();
     void teleportHead(glm::vec3 target);
     void teleportPUp(glm::vec3 target);
     WorldCell* reference_cell = NULL;

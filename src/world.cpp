@@ -126,7 +126,8 @@ void PlayerLocation::teleportHead(glm::vec3 target) {
 void PlayerLocation::teleportPUp(glm::vec3 target) {
     player_up = target;
 };
-WorldCell* PlayerLocation::getIntercept(vec3* intercept_point, int* intercept_idx) {
+
+InterceptResult PlayerLocation::getIntercept() {
     vec3 intercept, detransformed_head, detransformed_focus;
     int exit_index = -1;
     CellSide side;
@@ -158,9 +159,11 @@ WorldCell* PlayerLocation::getIntercept(vec3* intercept_point, int* intercept_id
         depth++;
         if (depth > 100) throw std::runtime_error("Max door intercept check passed");
     }
-    std::memcpy(intercept_point, &intercept, sizeof(vec3));
-    std::memcpy(intercept_idx, &exit_index, sizeof(int));
-    return next_cell;
+    InterceptResult result;
+    result.cell = next_cell;
+    result.point = intercept;
+    result.index = exit_index;
+    return result;
 }
 bool PlayerLocation::accountBoundary(vec3& direction) {
     // This method does two things:

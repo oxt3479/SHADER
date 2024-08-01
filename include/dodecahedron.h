@@ -133,6 +133,7 @@ struct Dodecahedron {
                     textured_verts[tv++] = prim_cell_verts[pcv++];
                     textured_verts[tv++] = texture_corners[tc++];
                     textured_verts[tv++] = texture_corners[tc++];
+                    textured_verts[tv++] = 0.0f;
                 }
                 
                 textured_indxs[ti++] = i*5+0;
