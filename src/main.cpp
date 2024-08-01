@@ -11,17 +11,16 @@ int main() {
 
     ShaderProgram world_shader( SHADER_DIR "/displacement.vert", \
                                 SHADER_DIR "/spell.frag", false);
-/*     ShaderProgram book_shader(  SHADER_DIR "/book.vert",\
-                                SHADER_DIR "/book.frag", false); */
+    ShaderProgram book_shader(  SHADER_DIR "/book.vert",\
+                                SHADER_DIR "/book.frag", false);
     
     
     PlayerContext player_context;
     /* world_shader.Activate(); */
     player_context.linkPlayerCellVAOs();
     
-    
-    /* book_shader.Activate(); */
-    /* spell_log.linkGrimoireVAO(); */
+    SpellLog spell_log;    
+    spell_log.linkGrimoireVAO();
 
     Uniforms* uniforms = getUniforms(window);
     
@@ -29,16 +28,14 @@ int main() {
     GLuint  U_RESOLUTION, U_MOUSE, U_SCROLL, U_TIME, U_CAMERA, U_WORLD, \
             U_SPELL_LIFE, U_CAST_LIFE, U_SPELL_FOCUS, U_SPELL_HEAD;
     CameraMats mats;
-    SpellLog spell_log;
+
     TextureLibrary texture_library;
 
     while (!glfwWindowShouldClose(window)) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
         if (uniforms->loading) {
             world_shader.Load();
             world_shader.Activate();
-            /* book_shader.Load(); */
 
             U_RESOLUTION  = glGetUniformLocation(world_shader.ID, "u_resolution");
             U_MOUSE       = glGetUniformLocation(world_shader.ID, "u_mouse");
@@ -52,7 +49,11 @@ int main() {
             U_SPELL_HEAD  = glGetUniformLocation(world_shader.ID, "SPELL_HEAD");
 
             texture_library.linkPentagonLibrary(world_shader.ID);
-            /* texture_library.linkGrimoireLibrary(book_shader.ID); */
+            
+            book_shader.Load();
+            book_shader.Activate();
+            
+            texture_library.linkGrimoireLibrary(book_shader.ID);
             
             uniforms->last_time         = glfwGetTime();
             uniforms->loading           = false;
@@ -60,10 +61,14 @@ int main() {
             
             glEnable(GL_DEPTH_TEST);
             glDepthFunc(GL_LESS);
+
+            world_shader.Activate();
         }
         time = glfwGetTime();
         uniforms->this_time = time;
-
+        
+        /* world_shader.Activate(); */
+        
         glClearColor(0.f, 0.f, 0.f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
@@ -73,8 +78,8 @@ int main() {
                                     uniforms->mouseY);
         glUniform1f(U_SCROLL,       uniforms->scroll);
         glUniform1f(U_TIME, time);
-                
-        accountSpells(uniforms, spell_log);
+        
+        accountSpells(uniforms, spell_log, world_shader.ID);
 
         glUniform1f(U_CAST_LIFE,    spell_log.cast_life[spell_log.active_spell]);
         glUniform1f(U_SPELL_LIFE,   spell_log.spell_life[spell_log.active_spell]);
@@ -90,10 +95,10 @@ int main() {
         glUniformMatrix4fv(U_CAMERA, 1, GL_FALSE, &(mats.Projection*mats.View)[0][0]);
         glUniformMatrix4fv(U_WORLD,  1, GL_FALSE, &(mats.Model)[0][0]);
         
-        player_context.drawPlayerCellVAOs();
+        player_context.drawPlayerCellVAOs(); 
 
-        /* book_shader.Activate(); */
-        /* spell_log.drawGrimoireVAO(); */
+        /* book_shader.Activate();  */
+        spell_log.drawGrimoireVAO();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

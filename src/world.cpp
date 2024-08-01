@@ -159,12 +159,10 @@ InterceptResult PlayerLocation::getIntercept() {
         depth++;
         if (depth > 100) throw std::runtime_error("Max door intercept check passed");
     }
-
     InterceptResult result;
     result.cell = next_cell;
     result.point = intercept;
     result.index = exit_index;
-
     return result;
 }
 bool PlayerLocation::accountBoundary(vec3& direction) {

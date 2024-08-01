@@ -6,6 +6,7 @@
 #include <time.h>
 #include <vector>
 
+
 struct InterceptResult {
     WorldCell* cell;
     glm::vec3 point;
@@ -21,7 +22,7 @@ struct PlayerLocation {
     glm::vec3 getPUp();
     float getHeight();
     void setFloorIndex(int index);
-    InterceptResult getIntercept(); 
+    InterceptResult getIntercept();
     void teleportHead(glm::vec3 target);
     void teleportPUp(glm::vec3 target);
     WorldCell* reference_cell = NULL;

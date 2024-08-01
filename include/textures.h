@@ -19,7 +19,8 @@ struct TextureLibrary {
         TEXTURE_DIR "/grimoire_cover.png",
         TEXTURE_DIR "/grimoire_page_1.png"
     };
-    void readRGBATextureArray(const char* paths[], int num_imgs, int prog_index);
     void linkPentagonLibrary(GLuint shaderID);
     void linkGrimoireLibrary(GLuint shaderID);
+    
+    void readRGBATextureArray(const char* paths[], int num_imgs, int prog_index);
 };
