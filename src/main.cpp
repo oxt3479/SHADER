@@ -20,7 +20,7 @@ int main() {
     player_context.linkPlayerCellVAOs();
     
     SpellLog spell_log;    
-    spell_log.linkGrimoireVAO();
+    spell_log.linkGrimoireVAOs();
 
     Uniforms* uniforms = getUniforms(window);
     
@@ -99,7 +99,7 @@ int main() {
 
         book_shader.Activate();
  
-        spell_log.drawGrimoireVAO();
+        spell_log.drawGrimoireVAOs();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
